@@ -4,12 +4,17 @@ EnsimeServerUpdateLogView = require './views/ensime-server-update-log-view'
 fs = require('fs')
 path = require('path')
 log = require('loglevel').getLogger('ensime.server-update')
+_ = require 'lodash'
+
 
 # Updates ensime server, invoke callback when done
 updateEnsimeServer = (parsedDotEnsime, ensimeServerVersion, classpathFile, whenUpdated = () -> ) ->
   scalaVersion = parsedDotEnsime.scalaVersion
-  javaCmd = "#{parsedDotEnsime.javaHome}#{path.sep}bin#{path.sep}java"
-  
+  javaCmd = if(parsedDotEnsime.javaHome)
+    "#{parsedDotEnsime.javaHome}#{path.sep}bin#{path.sep}java"
+  else
+    "java"
+    
   tempdir =  packageDir() + path.sep + "ensime_update_coursier"
 
   @serverUpdateLog = new EnsimeServerUpdateLogView()
