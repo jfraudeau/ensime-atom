@@ -56,7 +56,7 @@ goToDocAtPoint = (client, editor) ->
         else Documentation.openDoc(Documentation.formUrl("localhost", client.httpPort, msg.text))
   )
 
-goToDocIndex = ->
+goToDocIndex = (client) ->
   Documentation.openDoc("http://localhost:#{client.httpPort}/docs")
 
 
