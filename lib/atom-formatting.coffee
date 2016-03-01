@@ -1,5 +1,8 @@
+client = require 'ensime-client'
+
+
 # Atom specific formatting
-{formatType, formatTypeWith, fixQualifiedTypeName, fixShortTypeName} = require './ensime-client/formatting.coffee'
+{formatType, formatTypeWith, fixQualifiedTypeName, fixShortTypeName} = client.formatting
 
 formatTypeNameAsHtmlWithLink = (theType) ->
   qualifiedName = encodeURIComponent(fixQualifiedTypeName(theType))

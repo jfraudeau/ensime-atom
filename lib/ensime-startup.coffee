@@ -3,10 +3,13 @@ fs = require 'fs'
 path = require 'path'
 _ = require 'lodash'
 
+ensimeClient = require ('ensime-client')
+
 {packageDir, withSbt, mkClasspathFileName} = require('./utils')
-{parseDotEnsime} = require './ensime-client/dotensime-utils'
-doStartEnsimeServer = require './ensime-client/ensime-server-startup'
-{updateEnsimeServer} = require './ensime-server-update'
+{parseDotEnsime} = ensimeClient.dotEnsimeUtils
+doStartEnsimeServer = ensimeClient.ensimeServerStartup
+{updateEnsimeServer} = ensimeClient.ensimeServerUpdate
+
 updateEnsimeServerWithCoursier = require './ensime-server-update-coursier'
 log = require('loglevel').getLogger('ensime.startup')
 ###
@@ -80,5 +83,5 @@ startEnsimeServer = (parsedDotEnsime, pidCallback) ->
 
 
 module.exports = {
-  startClient: (require './ensime-client/ensime-client-startup')(startEnsimeServer)
+  startClient: (require 'ensime-client').ensimeClientStartup(startEnsimeServer)
 }

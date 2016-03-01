@@ -5,6 +5,8 @@ path = require('path')
 _ = require 'lodash'
 Promise = require 'bluebird'
 glob = require 'glob'
+ensimeClient = require 'ensime-client'
+
 
 {Subscriber} = require 'emissary'
 StatusbarView = require './views/statusbar-view'
@@ -24,10 +26,10 @@ AutocompletePlusProvider = require './features/autocomplete-plus'
 ImplicitInfo = require './model/implicit-info'
 ImplicitInfoView = require './views/implicit-info-view'
 SelectDotEnsimeView = require './views/select-dot-ensime-view'
-{parseDotEnsime, dotEnsimesFilter} = require './ensime-client/dotensime-utils'
+{parseDotEnsime, dotEnsimesFilter} = ensimeClient.dotEnsimeUtils
 
-InstanceManager = require './ensime-client/ensime-instance-manager'
-Instance = require './ensime-client/ensime-instance'
+InstanceManager = ensimeClient.InstanceManager
+Instance = ensimeClient.Instance
 
 log = require('loglevel')
 

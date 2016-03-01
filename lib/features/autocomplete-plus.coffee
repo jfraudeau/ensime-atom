@@ -1,4 +1,4 @@
-{formatCompletionsSignature} = require '../ensime-client/formatting'
+{formatCompletionsSignature} = (require 'ensime-client').formatting
 SubAtom = require 'sub-atom'
 log = require('loglevel').getLogger('ensime.autocomplete-plus-provider')
 

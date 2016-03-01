@@ -21,4 +21,4 @@ failure = (msg, code) ->
 tempdir = packageDir() + path.sep + "ensime_update_coursier"
 
 
-module.exports = (require './ensime-client/ensime-server-update-coursier')(tempdir, getPidLogger, failure)
+module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, getPidLogger, failure)

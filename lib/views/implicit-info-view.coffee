@@ -1,6 +1,6 @@
 {CompositeDisposable} = require 'atom'
 _ = require 'lodash'
-{formatImplicitInfo} = require '../ensime-client/formatting'
+{formatImplicitInfo} = (require 'ensime-client').formatting
 
 ListTemplate = """
   <div class="list-scroller">
