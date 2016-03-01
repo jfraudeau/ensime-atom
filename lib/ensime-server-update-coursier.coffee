@@ -1,3 +1,4 @@
+path = require 'path'
 log = require('loglevel').getLogger('ensime.server-update')
 {packageDir} = require './utils'
 EnsimeServerUpdateLogView = require './views/ensime-server-update-log-view'
