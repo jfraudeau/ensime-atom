@@ -1,10 +1,10 @@
 utils = require '../lib/utils'
 log = require 'loglevel'
+log.setDefaultLevel('trace')
 
 
 describe 'utils', ->
-  log.setDefaultLevel('trace')
-  it 'packageDir should not be undefined', ->
+  it 'packageDir should be undefined', ->
     packageDir = utils.packageDir()
-    log.trace('packageDir: ', packageDir)
+    log.trace('packageDir: ' + packageDir)
     expect(packageDir).toBeDefined()
