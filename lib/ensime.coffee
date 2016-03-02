@@ -5,11 +5,12 @@ path = require('path')
 _ = require 'lodash'
 Promise = require 'bluebird'
 glob = require 'glob'
+ensimeClient = require 'ensime-client'
+
 
 {Subscriber} = require 'emissary'
-Client = require './client'
 StatusbarView = require './views/statusbar-view'
-{CompositeDisposable, TextEditor} = require 'atom'
+{CompositeDisposable} = require 'atom'
 {startClient} = require './ensime-startup'
 
 ShowTypes = require './features/show-types'
@@ -19,14 +20,16 @@ AutoTypecheck = require './features/auto-typecheck'
 TypeCheckingFeature = require './features/typechecking'
 AutocompletePlusProvider = require './features/autocomplete-plus'
 {modalMsg, isScalaSource, projectPath} = require './utils'
+{goToTypeAtPoint} = require './features/go-to'
+{goToDocIndex, goToDocAtPoint} = require './features/documentation'
 
 ImplicitInfo = require './model/implicit-info'
 ImplicitInfoView = require './views/implicit-info-view'
 SelectDotEnsimeView = require './views/select-dot-ensime-view'
-{parseDotEnsime, dotEnsimesFilter} = require './ensime-client/dotensime-utils'
+{parseDotEnsime, dotEnsimesFilter} = ensimeClient.dotEnsimeUtils
 
-InstanceManager = require './ensime-client/ensime-instance-manager'
-Instance = require './ensime-client/ensime-instance'
+InstanceManager = ensimeClient.InstanceManager
+Instance = ensimeClient.Instance
 
 log = require('loglevel')
 
@@ -124,7 +127,7 @@ module.exports = Ensime =
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:go-to-definition", => @goToDefinitionOfCursor()
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:go-to-doc", => @goToDocOfCursor()
-    @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:browse-doc", => @goToDocIndex()
+    @startedCommands.add atom.commands.add 'atom-workspace', "ensime:browse-doc", => @goToDocIndex()
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:format-source", => @formatCurrentSourceFile()
 
@@ -178,7 +181,7 @@ module.exports = Ensime =
     @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
-      if(pane instanceof TextEditor and isScalaSource(pane))
+      if(atom.workspace.isTextEditor(pane) and isScalaSource(pane))
         instance = @instanceManager.instanceOfFile(pane.getPath())
         @switchToInstance(instance)
 
@@ -186,10 +189,10 @@ module.exports = Ensime =
     log.trace(['changed from ', @activeInstance, ' to ', instance])
     if(instance != @activeInstance)
       # TODO: create "class" for instance
-      @activeInstance?.statusbarView.hide()
+      @activeInstance?.ui.statusbarView.hide()
       @activeInstance = instance
       if(instance)
-        instance.statusbarView.show()
+        instance.ui.statusbarView.show()
 
 
   deactivate: ->
@@ -264,7 +267,15 @@ module.exports = Ensime =
     statusbarView.init()
 
     startClient(dotEnsime, @statusbarOutput(statusbarView, typechecking), (client) =>
-      instance = Instance(dotEnsime, client, statusbarView, typechecking)
+      # atom specific ui state of an instance
+      ui = {
+        statusbarView
+        typechecking
+        destroy: ->
+          statusbarView.destroy()
+          typechecking?.destroy()
+      }
+      instance = Instance(dotEnsime, client, ui)
 
       @instanceManager.registerInstance(instance)
       if (not @activeInstance)
@@ -344,25 +355,25 @@ module.exports = Ensime =
   # typechecks currently open file
   typecheckBuffer: ->
     b = atom.workspace.getActiveTextEditor()?.getBuffer()
-    @clientOfEditor(b)?.typecheckBuffer(b)
+    @clientOfEditor(b)?.typecheckBuffer(b.getPath(), b.getText())
 
   typecheckFile: ->
     b = atom.workspace.getActiveTextEditor()?.getBuffer()
-    @clientOfEditor(b)?.typecheckFile(b)
+    @clientOfEditor(b)?.typecheckFile(b.getPath())
 
   goToDocOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
-    @clientOfEditor(editor)?.goToDocAtPoint(editor)
+    goToDocAtPoint(@clientOfEditor(editor), editor)
 
   goToDocIndex: ->
     editor = atom.workspace.getActiveTextEditor()
-    @clientOfEditor(editor)?.goToDocIndex()
+    goToDocIndex(@clientOfEditor(editor))
 
   goToDefinitionOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
     textBuffer = editor.getBuffer()
     pos = editor.getCursorBufferPosition()
-    @clientOfEditor(editor)?.goToTypeAtPoint(textBuffer, pos)
+    goToTypeAtPoint(@clientOfEditor(editor), textBuffer, pos)
 
   markImplicits: ->
     editor = atom.workspace.getActiveTextEditor()
@@ -413,7 +424,7 @@ module.exports = Ensime =
             range: range
             callback: () ->
               if(client)
-                client.goToTypeAtPoint(textEditor.getBuffer(), range.start)
+                goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
               else
                 atom.notifications.addError("Ensime not started! :(", {
                   dismissable: true

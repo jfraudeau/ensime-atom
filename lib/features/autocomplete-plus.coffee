@@ -1,4 +1,4 @@
-{formatCompletionsSignature} = require '../ensime-client/formatting'
+{formatCompletionsSignature} = (require 'ensime-client').formatting
 SubAtom = require 'sub-atom'
 log = require('loglevel').getLogger('ensime.autocomplete-plus-provider')
 
@@ -25,6 +25,7 @@ module.exports = (clientLookup) ->
               {
                 leftLabel: c.typeSig.result
                 snippet: "#{c.name}#{formattedSignature}"
+                fullyQualified: c.typeSig.result
               }
             else
               {
@@ -34,6 +35,7 @@ module.exports = (clientLookup) ->
           autocompletions = (translate c for c in completions)
           callback(autocompletions)
       )
-    onDidInsertSuggestion: (thang) ->
+    onDidInsertSuggestion: ({editor, suggestion, triggerPosition}) ->
+      client = clientLookup(editor)
       log.trace(['inserted suggestion', thang])
   }

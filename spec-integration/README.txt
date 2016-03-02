@@ -6,6 +6,6 @@ Same as when running internally using cmd-alt-ctrl-P or the likes.
 
 So to separate long integration tests we can have separate folders and do
 
-`atom --dev --test spec-win-integration` locally
+`atom --dev --test spec-integration` locally
 
 The windows one is now run in appveyor using custom fork of atom-ci script: 
