@@ -10,7 +10,6 @@ describe "ensime-server-update", ->
     # Java is installed installed on appveyor build servers C:\Program Files\Java\jdk1.8.0
     # http://www.appveyor.com/docs/installed-software#java
     tempDir = temp.mkdirSync('ensime-integration-test')
-    expect(false)
     
     dotEnsime =
       name: "test"

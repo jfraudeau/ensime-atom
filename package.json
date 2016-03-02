@@ -8,6 +8,9 @@
   "engines": {
     "atom": ">0.50.0"
   },
+  "scripts": {
+    "prepublish": "atom --dev --test spec; atom --dev --test spec-integration"
+  },
   "dependencies": {
     "atom-message-panel": "~1.2.4",
     "atom-package-deps": "~3.0.9",
