@@ -1,4 +1,3 @@
-updateEnsimeServer = require '../lib/ensime-server-update-coursier'
 fs = require 'fs'
 path = require 'path'
 temp = require 'temp'
@@ -24,6 +23,7 @@ describe "ensime-server-update", ->
 
     spy = jasmine.createSpy('classpathfile-callback')
     
+    updateEnsimeServer = require '../lib/ensime-server-update-coursier'
     updateEnsimeServer(dotEnsime, "0.9.10-SNAPSHOT", tempDir + path.sep + "classpathfile", spy)
     
     waitsFor( (-> spy.callCount > 0), "callback wasn't called in time", 60000)
