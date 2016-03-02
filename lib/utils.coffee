@@ -71,7 +71,10 @@ mkClasspathFileName = (scalaVersion, ensimeServerVersion) ->
 
 
 
-packageDir = () -> atom.packages.resolvePackagePath('Ensime')
+packageDir = ->
+  packageDir = atom.packages.resolvePackagePath('Ensime')
+  log.trace('packageDir: ', packageDir)
+  packageDir
 
 module.exports = {
   isScalaSource,

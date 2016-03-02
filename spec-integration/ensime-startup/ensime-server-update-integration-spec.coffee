@@ -2,9 +2,13 @@ updateEnsimeServer = require ('../../lib/ensime-server-update-coursier')
 fs = require 'fs'
 path = require 'path'
 temp = require 'temp'
+loglevel = require 'loglevel'
+loglevel.setDefaultLevel('trace')
+loglevel.setLevel('trace')
 
 describe "ensime-server-update", ->
   beforeEach ->
+
 
   it "should be able to download coursier", ->
     # Java is installed installed on appveyor build servers C:\Program Files\Java\jdk1.8.0
