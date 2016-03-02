@@ -62,23 +62,14 @@ startEnsimeServer = (parsedDotEnsime, pidCallback) ->
   ensimeServerFlags = atom.config.get('Ensime.ensimeServerFlags')
   
   # update server and start
-  if atom.config.get('Ensime.useCoursierToBootstrapServer')
-    # Pull out so coursier can have different classpath file name
-    cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion())
-    log.trace("classpathfile name: #{cpF}")
-    if(not classpathFileOk(cpF))
-      updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion(), cpF,
-        () -> doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags))
-    else
-      doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags)
+  # Pull out so coursier can have different classpath file name
+  cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion())
+  log.trace("classpathfile name: #{cpF}")
+  if(not classpathFileOk(cpF))
+    updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion(), cpF,
+      () -> doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags))
   else
-    cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion())
-    if(not classpathFileOk(cpF))
-      withSbt (sbtCmd) ->
-        updateEnsimeServer(sbtCmd, parsedDotEnsime.scalaVersion, ensimeServerVersion(),
-          () -> doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags))
-    else
-      doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags)
+    doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags)
 
 
 
