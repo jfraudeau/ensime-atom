@@ -17,6 +17,7 @@ describe "ensime-server-update", ->
     dotEnsime =
       name: "test"
       scalaVersion: "2.11.7"
+      scalaEdition: "2.11"
       rootDir: tempDir
       cacheDir: tempDir + path.sep + ".ensime_cache"
       dotEnsimePath: tempDir + path.sep + ".ensime"
