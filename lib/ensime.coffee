@@ -199,6 +199,8 @@ module.exports = Ensime =
     statusbarView.init()
 
     startClient(dotEnsime, @statusbarOutput(statusbarView, typechecking), (client) =>
+      atom.notifications.addSuccess("Ensime connected!")
+      
       # atom specific ui state of an instance
       ui = {
         statusbarView

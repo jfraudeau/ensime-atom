@@ -5,9 +5,9 @@ _ = require 'lodash'
 
 ensimeClient = require ('ensime-client')
 
-{packageDir, withSbt, mkClasspathFileName} = require('./utils')
+{packageDir, withSbt, mkClasspathFileName, mkAssemblyJarFileName} = require('./utils')
 {parseDotEnsime} = ensimeClient.dotEnsimeUtils
-doStartEnsimeServer = ensimeClient.ensimeServerStartup
+{startServerFromFile, startServerFromAssemblyJar} = ensimeClient
 {updateEnsimeServer} = ensimeClient.ensimeServerUpdate
 
 updateEnsimeServerWithCoursier = require './ensime-server-update-coursier'
@@ -35,10 +35,6 @@ startServer(dotEnsime, whenStarted) ->
 
 ###
 
-# ensime server version from settings
-ensimeServerVersion = ->
-  atom.config.get('Ensime.ensimeServerVersion')
-
 
 
 # Check that we have a classpath that is newer than atom
@@ -48,7 +44,7 @@ classpathFileOk = (cpF) ->
     false
   else
     cpFStats = fs.statSync(cpF)
-    fine = cpFStats.isFile && cpFStats.ctime > fs.statSync(packageDir() + path.sep + 'package.json').mtime
+    fine = cpFStats.isFile && cpFStats.ctime > fs.statSync(path.join(packageDir(), 'package.json')).mtime
     if not fine
       fs.unlinkSync(cpF)
     fine
@@ -59,17 +55,20 @@ startEnsimeServer = (parsedDotEnsime, pidCallback) ->
   if not fs.existsSync(parsedDotEnsime.cacheDir)
     fs.mkdirSync(parsedDotEnsime.cacheDir)
 
+  ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
+
   ensimeServerFlags = atom.config.get('Ensime.ensimeServerFlags')
+  assemblyJar = mkAssemblyJarFileName(parsedDotEnsime.scalaEdition, ensimeServerVersion)
   
-  # update server and start
-  # Pull out so coursier can have different classpath file name
-  cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion())
-  log.trace("classpathfile name: #{cpF}")
-  if(not classpathFileOk(cpF))
-    updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion(), cpF,
-      () -> doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags))
+  if(fs.existsSync(assemblyJar))
+    startServerFromAssemblyJar(assemblyJar, parsedDotEnsime, ensimeServerFlags, pidCallback)
   else
-    doStartEnsimeServer(cpF, parsedDotEnsime, pidCallback, ensimeServerFlags)
+    cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
+    startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerFlags, pidCallback)
+    if(not classpathFileOk(cpF))
+      updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF, startFromCPFile)
+    else
+      startFromCPFile()
 
 
 
