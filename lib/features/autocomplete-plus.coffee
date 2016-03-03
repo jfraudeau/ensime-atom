@@ -37,5 +37,5 @@ module.exports = (clientLookup) ->
       )
     onDidInsertSuggestion: ({editor, suggestion, triggerPosition}) ->
       client = clientLookup(editor)
-      log.trace(['inserted suggestion', thang])
+      log.trace(['inserted suggestion', suggestion])
   }
