@@ -31,8 +31,9 @@ SelectDotEnsimeView = require './views/select-dot-ensime-view'
 InstanceManager = ensimeClient.InstanceManager
 Instance = ensimeClient.Instance
 
-log = require('loglevel')
+logapi = require('loglevel')
 
+log = undefined
 
 scalaSourceSelector = """atom-text-editor[data-grammar="source scala"]"""
 module.exports = Ensime =
@@ -72,12 +73,12 @@ module.exports = Ensime =
   activate: (state) ->
     logLevel = atom.config.get('Ensime.logLevel')
 
-    log.getLogger('ensime.client').setLevel(logLevel)
-    log.getLogger('ensime.server-update').setLevel(logLevel)
-    log.getLogger('ensime.startup').setLevel(logLevel)
-    log.getLogger('ensime.autocomplete-plus-provider').setLevel(logLevel)
-    log.getLogger('ensime.refactorings').setLevel(logLevel)
-    log = log.getLogger('ensime.main')
+    logapi.getLogger('ensime.client').setLevel(logLevel)
+    logapi.getLogger('ensime.server-update').setLevel(logLevel)
+    logapi.getLogger('ensime.startup').setLevel(logLevel)
+    logapi.getLogger('ensime.autocomplete-plus-provider').setLevel(logLevel)
+    logapi.getLogger('ensime.refactorings').setLevel(logLevel)
+    log = logapi.getLogger('ensime.main')
     log.setLevel(logLevel)
 
     # Install deps if not there
