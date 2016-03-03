@@ -67,9 +67,11 @@ withSbt = (callback) ->
 
 # create classpath file name for ensime server startup
 mkClasspathFileName = (scalaVersion, ensimeServerVersion) ->
-  atom.packages.resolvePackagePath('Ensime') + path.sep + "classpath_#{scalaVersion}_#{ensimeServerVersion}"
+  path.join(atom.packages.resolvePackagePath('Ensime'), "classpath_#{scalaVersion}_#{ensimeServerVersion}")
 
-
+mkAssemblyJarFileName = (scalaEdition, ensimeServerVersion) ->
+  path.join(atom.packages.resolvePackagePath('Ensime'),
+    "ensime_#{scalaEdition}-#{ensimeServerVersion}-assembly.jar")
 
 packageDir = ->
   packageDir = atom.packages.resolvePackagePath('Ensime')
@@ -88,5 +90,6 @@ module.exports = {
   addModalPanel,
   packageDir,
   mkClasspathFileName,
+  mkAssemblyJarFileName
   getTempDir
 }
