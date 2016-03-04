@@ -37,7 +37,8 @@
     "hyperclick",
     "language-scala",
     "linter",
-    "browser-plus"
+    "browser-plus",
+    "intentions"
   ],
   "providedServices": {
     "autocomplete.provider": {
@@ -48,6 +49,11 @@
     "hyperclick.provider": {
       "versions": {
         "0.0.0": "provideHyperclick"
+      }
+    },
+    "intentions:list": {
+      "versions": {
+        "1.0.0": "provideIntentions"
       }
     }
   },

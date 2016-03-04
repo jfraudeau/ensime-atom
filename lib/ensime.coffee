@@ -22,6 +22,8 @@ AutocompletePlusProvider = require './features/autocomplete-plus'
 {modalMsg, isScalaSource, projectPath} = require './utils'
 {goToTypeAtPoint} = require './features/go-to'
 {goToDocIndex, goToDocAtPoint} = require './features/documentation'
+ImportSuggestions = require './features/import-suggestions'
+Refactorings = require './features/refactorings'
 
 ImplicitInfo = require './model/implicit-info'
 ImplicitInfoView = require './views/implicit-info-view'
@@ -65,7 +67,6 @@ module.exports = Ensime =
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:format-source", => @formatCurrentSourceFile()
 
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:search-public-symbol", => @searchPublicSymbol()
-    @startedCommands.add atom.commands.add 'atom-workspace', "ensime:import-suggestion", => @getImportSuggestions()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:organize-imports", => @organizeImports()
 
 
@@ -112,6 +113,9 @@ module.exports = Ensime =
 
     clientLookup = (editor) => @clientOfEditor(editor)
     @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
+  
+    @importSuggestions = new ImportSuggestions()
+    @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
       if(atom.workspace.isTextEditor(pane) and isScalaSource(pane))
@@ -375,6 +379,34 @@ module.exports = Ensime =
   consumeLinter: (@indieLinterRegistry) ->
 
 
+  provideIntentions: ->
+    getIntentions = (req) =>
+      textEditor = req.textEditor
+      bufferPosition = req.bufferPosition
+      
+      new Promise (resolve) =>
+        @importSuggestions.getImportSuggestions(
+          @clientOfEditor(textEditor),
+          textEditor.getBuffer(),
+          textEditor.getBuffer().characterIndexForPosition(bufferPosition),
+          textEditor.getWordUnderCursor(), # FIXME!
+          (res) =>
+            resolve(_.map(res.symLists[0], (sym) =>
+              onSelected = => @refactorings.doImport(@clientOfEditor(textEditor), sym.name, textEditor.getPath(), textEditor.getBuffer())
+              {
+                priority: 100
+                icon: 'bucket'
+                class: 'custom-icon-class'
+                title: "import #{sym.name}"
+                selected: onSelected
+              }
+            ))
+          )
+    {
+      grammarScopes: ['source.scala']
+      getIntentions: getIntentions
+    }
+
   formatCurrentSourceFile: ->
     editor = atom.workspace.getActiveTextEditor()
     cursorPos = editor.getCursorBufferPosition()
@@ -390,21 +422,6 @@ module.exports = Ensime =
       @publicSymbolSearch = new PublicSymbolSearch()
     @publicSymbolSearch.toggle(@clientOfActiveTextEditor())
 
-  getImportSuggestions: ->
-    unless @importSuggestions
-      ImportSuggestions = require('./features/import-suggestions')
-      @importSuggestions = new ImportSuggestions()
-    editor = atom.workspace.getActiveTextEditor()
-    @importSuggestions.getImportSuggestions(
-      @clientOfEditor(editor),
-      editor.getBuffer(),
-      editor.getBuffer().characterIndexForPosition(editor.getCursorBufferPosition()),
-      editor.getWordUnderCursor()
-    )
-
   organizeImports: ->
-    unless @refactorings
-      Refactorings = require './features/refactorings'
-      @refactorings = new Refactorings
     editor = atom.workspace.getActiveTextEditor()
     @refactorings.organizeImports(@clientOfEditor(editor), editor.getPath())
