@@ -72,6 +72,7 @@ class Implicits
         
   showImplicitsAtCursor: ->
     pos = @editor.getCursorBufferPosition()
+    markers = @findMarkers({type: 'implicit', containsPoint: pos})
     infos = markers.map (marker) -> marker.properties.info
     implicitInfo = new ImplicitInfo(infos, @editor, pos)
 
@@ -86,8 +87,5 @@ class Implicits
   deactivate: ->
     @disposables.dispose()
     @clearMarkers()
-
-
-# _.extend(attributes, class: 'bookmark')
 
 module.exports = Implicits
