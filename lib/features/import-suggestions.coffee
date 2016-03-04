@@ -3,7 +3,13 @@ module.exports = class ImportSuggestions
   constructor: ->
     @refactorings = new (require('./refactorings'))
 
-  getImportSuggestions: (client, buffer, pos, symbol) ->
+  useFirst: (res) ->
+    # TODO: Add ui for selection
+    name = res.symLists[0][0].name
+    
+    @refactorings.doImport(client, name, file, buffer)
+    
+  getImportSuggestions: (client, buffer, pos, symbol, callback = @useFirst) ->
     file = buffer.getPath()
 
     req =
@@ -13,9 +19,4 @@ module.exports = class ImportSuggestions
       names: [symbol]
       maxResults: 10
 
-    client.post(req, (res) =>
-      # TODO: Add ui for selection
-      name = res.symLists[0][0].name
-      
-      @refactorings.doImport(client, name, file, buffer)
-    )
+    client.post(req, callback)
