@@ -6,12 +6,15 @@ _ = require 'lodash'
 ensimeClient = require ('ensime-client')
 
 {packageDir, withSbt, mkClasspathFileName, mkAssemblyJarFileName} = require('./utils')
+
+console.log(['ensimeClient', ensimeClient])
+{updateEnsimeServer} = ensimeClient.ensimeServerUpdate
 {parseDotEnsime} = ensimeClient.dotEnsimeUtils
 {startServerFromFile, startServerFromAssemblyJar} = ensimeClient
-{updateEnsimeServer} = ensimeClient.ensimeServerUpdate
 
 updateEnsimeServerWithCoursier = require './ensime-server-update-coursier'
 log = require('loglevel').getLogger('ensime.startup')
+
 ###
 ## Pseudo:
 This code is pretty complex with lots of continuation passing.

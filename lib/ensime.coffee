@@ -118,6 +118,8 @@ module.exports = Ensime =
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
       if(atom.workspace.isTextEditor(pane) and isScalaSource(pane))
+        log.trace('this: ' + this)
+        log.trace(['@instanceManager: ', @instanceManager])
         instance = @instanceManager.instanceOfFile(pane.getPath())
         @switchToInstance(instance)
 
@@ -213,7 +215,7 @@ module.exports = Ensime =
           statusbarView.destroy()
           typechecking?.destroy()
       }
-      instance = Instance(dotEnsime, client, ui)
+      instance = new Instance(dotEnsime, client, ui)
 
       @instanceManager.registerInstance(instance)
       if (not @activeInstance)
@@ -244,7 +246,7 @@ module.exports = Ensime =
   selectDotEnsime: (callback, filter = -> true) ->
     dirs = atom.project.getPaths()
   
-    allDotEnsimesInPaths(dirs).then (dotEnsime) ->
+    allDotEnsimesInPaths(dirs).then (dotEnsimes) ->
       filteredDotEnsime = _.filter(dotEnsimes, filter)
 
       if(filteredDotEnsime.length == 0)
