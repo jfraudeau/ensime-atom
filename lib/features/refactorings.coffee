@@ -70,12 +70,15 @@ module.exports = class Refactorings
       if(patch.oldFileName == patch.newFileName)
         atom.workspace.open(patch.newFileName).then (editor) ->
           b = editor.getBuffer()
-          for hunk in patch.hunks
-            range = [[hunk.oldStart - 1, 0], [hunk.oldStart + hunk.oldLines - 2, 0]]
-            log.trace ['range', range]
+          actions = patch.hunks.map (hunk) ->
+            zeroBasedStart = hunk.newStart - 1
+            range = [[zeroBasedStart, 0], [zeroBasedStart + hunk.oldLines, 0]]
             newLines = _.filter(hunk.lines, (l) -> not l.startsWith('-'))
-            newLines = _.map(newLines, (l) -> if(l.length == 1) then l else l.substring(1, l.length))
-            toInsert = _.join(newLines, '\n')
+            nonEmpty = _.map(newLines, (l) -> if(l.length == 1) then l else l.substring(1, l.length))
+            toInsert = _.join(_.map(nonEmpty, (l) -> l + '\n'), "")
+            {range, toInsert}
+            
+          for {range, toInsert} in actions
             b.setTextInRange(range, toInsert)
       else
         Promise.reject("Sorry, no file renames yet :(")
