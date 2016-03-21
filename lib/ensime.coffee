@@ -3,8 +3,7 @@ exec = require('child_process').exec
 fs = require 'fs'
 path = require('path')
 _ = require 'lodash'
-Promise = require 'bluebird'
-glob = require 'glob'
+
 ensimeClient = require 'ensime-client'
 
 
@@ -28,8 +27,8 @@ Refactorings = require './features/refactorings'
 ImplicitInfo = require './model/implicit-info'
 ImplicitInfoView = require './views/implicit-info-view'
 SelectDotEnsimeView = require './views/select-dot-ensime-view'
-{parseDotEnsime, dotEnsimesFilter} = ensimeClient.dotEnsimeUtils
 
+{parseDotEnsime, dotEnsimesFilter, allDotEnsimesInPaths} = ensimeClient.dotEnsimeUtils
 InstanceManager = ensimeClient.InstanceManager
 Instance = ensimeClient.Instance
 
@@ -119,6 +118,8 @@ module.exports = Ensime =
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
       if(atom.workspace.isTextEditor(pane) and isScalaSource(pane))
+        log.trace('this: ' + this)
+        log.trace(['@instanceManager: ', @instanceManager])
         instance = @instanceManager.instanceOfFile(pane.getPath())
         @switchToInstance(instance)
 
@@ -214,7 +215,7 @@ module.exports = Ensime =
           statusbarView.destroy()
           typechecking?.destroy()
       }
-      instance = Instance(dotEnsime, client, ui)
+      instance = new Instance(dotEnsime, client, ui)
 
       @instanceManager.registerInstance(instance)
       if (not @activeInstance)
@@ -244,21 +245,8 @@ module.exports = Ensime =
   # Shows dialog to select a .ensime under this project paths and calls callback with parsed
   selectDotEnsime: (callback, filter = -> true) ->
     dirs = atom.project.getPaths()
-    globTask = Promise.promisify(glob)
-    promises = dirs.map (dir) ->
-      globTask(
-        '.ensime'
-          cwd: dir
-          matchBase: true
-          nodir: true
-          realpath: true
-          ignore: '**/{node_modules,.ensime_cache,.git,target,.idea}/**'
-      )
-
-    promise = Promise.all(promises)
-
-    promise.then (dotEnsimesUnflattened) ->
-      dotEnsimes = ({path: path} for path in _.flattenDeep(dotEnsimesUnflattened))
+  
+    allDotEnsimesInPaths(dirs).then (dotEnsimes) ->
       filteredDotEnsime = _.filter(dotEnsimes, filter)
 
       if(filteredDotEnsime.length == 0)
@@ -389,6 +377,8 @@ module.exports = Ensime =
           @clientOfEditor(textEditor),
           textEditor.getBuffer(),
           textEditor.getBuffer().characterIndexForPosition(bufferPosition),
+          
+          getTextInBufferRange
           textEditor.getWordUnderCursor(), # FIXME!
           (res) =>
             resolve(_.map(res.symLists[0], (sym) =>

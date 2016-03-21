@@ -10,6 +10,28 @@ formatTypeNameAsHtmlWithLink = (theType) ->
   """<a data-qualified-name="#{qualifiedName}" title="#{qualifiedName}">#{shortName}</a>"""
 
 
-module.exports =
-  formatTypeAsString: formatType
-  formatTypeAsHtml: formatTypeWith formatTypeNameAsHtmlWithLink
+# Format for autocomplete-plus
+formatCompletionsSignature = (paramLists) ->
+  formatParamLists = (paramLists) ->
+    i = 0
+    formatParamList = (paramList) ->
+      formatParam = (param) ->
+        i = i+1
+        "${#{i}:#{param[0]}: #{param[1]}}"
+      p = (formatParam(param) for param in paramList)
+      "(" + p.join(", ") + ")"
+
+    formattedParamLists = (formatParamList paramList for paramList in paramLists)
+    formattedParamLists.join("")
+  if(paramLists)
+    formatParamLists(paramLists)
+  else
+    ""
+    
+formatTypeAsHtml = formatTypeWith formatTypeNameAsHtmlWithLink
+  
+module.exports = {
+  formatTypeAsString: formatType,
+  formatTypeAsHtml,
+  formatCompletionsSignature
+}
