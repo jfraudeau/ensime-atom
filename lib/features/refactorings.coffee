@@ -57,9 +57,9 @@ module.exports = class Refactorings
     )
     
     
-  applyPatchFromFile: (patchPath, callback = ->) ->
-    fs.readFile(patchPath, 'utf8', (err, unifiedDiff) ->
-      applyPatchesInEditors(unifiedDiff, callback)
+  applyPatchFromFile: (patchPath, callback = ->) =>
+    fs.readFile(patchPath, 'utf8', (err, unifiedDiff) =>
+      @applyPatchesInEditors(unifiedDiff, callback)
     )
     
   # Very atom specific. move out
