@@ -57,11 +57,16 @@ module.exports = class Refactorings
     )
     
     
-  applyPatchFromFile: (patchPath, callback = ->) =>
-    fs.readFile(patchPath, 'utf8', (err, unifiedDiff) =>
-      @applyPatchesInEditors(unifiedDiff, callback)
-    )
+  applyPatchFromFile: (patchPath) ->
+    Promise.promisify(fs.readFile)(patchPath, 'utf8').then (unifiedDiff) =>
+      @applyPatchFromFileContent(unifiedDiff)
     
+  applyPatchFromFileContent: (unifiedDiff) ->
+    if(unifiedDiff.length > 0)
+      @applyPatchesInEditors(unifiedDiff)
+    else
+      Promise.resolve()
+      
   # Very atom specific. move out
   applyPatchesInEditors: (unifiedDiff) ->
     patches = JsDiff.parsePatch(unifiedDiff)
@@ -88,16 +93,16 @@ module.exports = class Refactorings
           
           
         
-  maybeApplyPatch: (result, callback = ->) ->
+  maybeApplyPatch: (result) ->
     if(result.typehint == 'RefactorDiffEffect')
-      @applyPatchFromFile(result.diff, callback)
+      @applyPatchFromFile(result.diff)
     else
       log.trace(res)
 
 
   organizeImports: (client, file, callback = -> ) ->
     @getOrganizeImportsPatch(client, file, (res) =>
-      @maybeApplyPatch(res, callback)
+      @maybeApplyPatch(res)
     )
     
     

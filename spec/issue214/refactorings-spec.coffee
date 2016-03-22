@@ -12,15 +12,16 @@ testDiffApplication = (fileName, before, diff, expected) ->
       editor.setText(before)
 
   waitsForPromise ->
-    refactorings.applyPatchesInEditors(diff)
+    refactorings.applyPatchFromFileContent(diff)
     
   waitsForPromise ->
     atom.workspace.open(fileName).then (editor) ->
       result = editor.getText()
       expect(result).toEqual(expected)
+  
+  "hej"
 
-
-describe 'applyParsedPatchesInEditors', ->
+describe 'applyPatchesInEditors', ->
   
   beforeEach ->
     temp.track()
@@ -108,6 +109,21 @@ describe 'applyParsedPatchesInEditors', ->
             
     testDiffApplication(fileName, fileContents, diff, expectedResult)
   
-          
+  
+  describe "empty diffs", ->
+    beforeEach ->
+      spyOn(atom.workspace, 'open').andCallThrough()
+      
+      fileName = temp.path({suffix: '.scala'})
+      fileContents = ""
+      diff = ""
+      expectedResult = ""
+      
+      testDiffApplication(fileName, fileContents, diff, expectedResult)
+    
+    it "should not call open with undefined", ->
+      log.trace('expecting!')
+      expect(atom.workspace.open).not.toHaveBeenCalledWith(undefined)
+    
   afterEach ->
     temp.cleanupSync()
