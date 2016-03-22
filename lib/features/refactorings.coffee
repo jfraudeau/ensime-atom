@@ -74,10 +74,12 @@ module.exports = class Refactorings
             zeroBasedStart = hunk.newStart - 1
             range = [[zeroBasedStart, 0], [zeroBasedStart + hunk.oldLines, 0]]
             newLines = _.filter(hunk.lines, (l) -> not l.startsWith('-'))
-            nonEmpty = _.map(newLines, (l) -> if(l.length == 1) then l else l.substring(1, l.length))
+            log.trace ['newLines: ', newLines]
+            nonEmpty = _.map(newLines, (l) -> l.substring(1, l.length))
             toInsert = _.join(_.map(nonEmpty, (l) -> l + '\n'), "")
             {range, toInsert}
             
+          log.trace ['diff actions: ', actions]
           for {range, toInsert} in actions
             b.setTextInRange(range, toInsert)
       else
