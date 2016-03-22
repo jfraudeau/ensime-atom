@@ -1,6 +1,7 @@
 fs = require 'fs'
 JsDiff = require 'diff'
 log = require('loglevel').getLogger('ensime.refactorings')
+Promise = require 'bluebird'
 
 # Refactorings should be cleaned of Atom stuff and put in client module. Add callback for what to do with patches
 module.exports = class Refactorings
@@ -56,42 +57,58 @@ module.exports = class Refactorings
     )
     
     
+  applyPatchFromFile: (patchPath) ->
+    Promise.promisify(fs.readFile)(patchPath, 'utf8').then (unifiedDiff) =>
+      @applyPatchFromFileContent(unifiedDiff)
+    
+  applyPatchFromFileContent: (unifiedDiff) ->
+    if(unifiedDiff.length > 0)
+      @applyPatchesInEditors(unifiedDiff)
+    else
+      Promise.resolve()
+      
   # Very atom specific. move out
-  applyPatchInEditors: (client, patchPath, callback = ->) ->
-    fs.readFile(patchPath, 'utf8', (err, unifiedDiff) ->
-      patches = JsDiff.parsePatch(unifiedDiff)
-      for patch in patches
-        log.trace(patch)
-        if(patch.oldFileName == patch.newFileName)
-          atom.workspace.open(patch.newFileName).then (editor) ->
-            b = editor.getBuffer()
-            for hunk in patch.hunks
-              range = [[hunk.oldStart - 1, 0], [hunk.oldStart + hunk.oldLines - 2, 0]]
-              log.trace ['range', range]
-              newLines = _.filter(hunk.lines, (l) -> not l.startsWith('-'))
-              newLines = _.map(newLines, (l) -> if(l.length == 1) then l else l.substring(1, l.length))
-              toInsert = _.join(newLines, '\n')
-              b.setTextInRange(range, toInsert)
-        else
-          atom.notifications.addError("Sorry, no file renames yet")
-    )
+  applyPatchesInEditors: (unifiedDiff) ->
+    patches = JsDiff.parsePatch(unifiedDiff)
+    promises = patches.map (patch) ->
+      log.trace(patch)
+      if(patch.oldFileName == patch.newFileName)
+        atom.workspace.open(patch.newFileName).then (editor) ->
+          b = editor.getBuffer()
+          actions = patch.hunks.map (hunk) ->
+            zeroBasedStart = hunk.newStart - 1
+            range = [[zeroBasedStart, 0], [zeroBasedStart + hunk.oldLines, 0]]
+            newLines = _.filter(hunk.lines, (l) -> not l.startsWith('-'))
+            log.trace ['newLines: ', newLines]
+            nonEmpty = _.map(newLines, (l) -> l.substring(1, l.length))
+            toInsert = _.join(_.map(nonEmpty, (l) -> l + '\n'), "")
+            {range, toInsert}
+            
+          log.trace ['diff actions: ', actions]
+          for {range, toInsert} in actions
+            b.setTextInRange(range, toInsert)
+      else
+        Promise.reject("Sorry, no file renames yet :(")
+    Promise.all(promises)
+          
+          
         
-  maybeApplyPatch: (client, result, callback = ->) ->
+  maybeApplyPatch: (result) ->
     if(result.typehint == 'RefactorDiffEffect')
-      @applyPatchInEditors(client, result.diff, callback)
+      @applyPatchFromFile(result.diff)
     else
       log.trace(res)
 
 
   organizeImports: (client, file, callback = -> ) ->
     @getOrganizeImportsPatch(client, file, (res) =>
-      @maybeApplyPatch(client, res, callback)
+      @maybeApplyPatch(res)
     )
     
     
   doImport: (client, name, file, buffer, callback = ->) ->
     @getAddImportPatch(client, name, file, (importResponse) =>
-      @maybeApplyPatch(client, importResponse, () ->
+      @maybeApplyPatch(importResponse, () ->
         client.typecheckBuffer(buffer.getPath(), buffer.getText(), callback)
       )
     )

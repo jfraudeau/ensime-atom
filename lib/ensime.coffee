@@ -377,8 +377,6 @@ module.exports = Ensime =
           @clientOfEditor(textEditor),
           textEditor.getBuffer(),
           textEditor.getBuffer().characterIndexForPosition(bufferPosition),
-          
-          getTextInBufferRange
           textEditor.getWordUnderCursor(), # FIXME!
           (res) =>
             resolve(_.map(res.symLists[0], (sym) =>
