@@ -10,7 +10,7 @@ ensimeClient = require 'ensime-client'
 {Subscriber} = require 'emissary'
 StatusbarView = require './views/statusbar-view'
 {CompositeDisposable} = require 'atom'
-{startClient} = require './ensime-startup'
+{startClient, updateEnsimeServer} = require './ensime-startup'
 
 ShowTypes = require './features/show-types'
 Implicits = require './features/implicits'
@@ -44,11 +44,14 @@ module.exports = Ensime =
   addCommandsForStoppedState: ->
     @stoppedCommands = new CompositeDisposable
     @stoppedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
+    @stoppedCommands.add atom.commands.add 'atom-workspace', "ensime:update-server", => @selectAndUpdateAnEnsime()
 
   addCommandsForStartedState: ->
     @startedCommands = new CompositeDisposable
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:stop", => @selectAndStopAnEnsime()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
+    @startedCommands.add atom.commands.add 'atom-workspace', "ensime:update-server", => @selectAndUpdateAnEnsime()
+    
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:mark-implicits", => @markImplicits()
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:unmark-implicits", => @unmarkImplicits()
@@ -147,7 +150,7 @@ module.exports = Ensime =
     if(editor)
       @instanceManager.instanceOfFile(editor.getPath())?.client
     else
-      @instanceManager.firstInstance().client
+      @instanceManager.firstInstance()?.client
 
   clientOfActiveTextEditor: ->
     @clientOfEditor(atom.workspace.getActiveTextEditor())
@@ -264,7 +267,6 @@ module.exports = Ensime =
       (dotEnsime) => not @instanceManager.isStarted(dotEnsime.path)
     )
 
-
   selectAndStopAnEnsime: ->
     stopDotEnsime = (selectedDotEnsime) =>
       dotEnsime = parseDotEnsime(selectedDotEnsime.path)
@@ -272,6 +274,12 @@ module.exports = Ensime =
       @switchToInstance(undefined)
 
     @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager.isStarted(dotEnsime.path))
+  
+  selectAndUpdateAnEnsime: ->
+    @selectDotEnsime (selectedDotEnsime) ->
+      dotEnsime = parseDotEnsime(selectedDotEnsime.path)
+      updateEnsimeServer(dotEnsime, -> atom.notifications.addSuccess("Updated!"))
+    
 
   typecheckAll: ->
     @clientOfActiveTextEditor()?.post( {"typehint": "TypecheckAllReq"}, (msg) ->)
