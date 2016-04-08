@@ -1,8 +1,5 @@
-TypeHoverElement = require '../views/type-hover-element'
 {bufferPositionFromMouseEvent, pixelPositionFromMouseEvent, getElementsByClass} = require '../utils'
-{formatTypeAsString, formatTypeAsHtml} = require '../atom-formatting'
 SubAtom = require('sub-atom')
-DOMListener = require 'dom-listener'
 {goToPosition} = require './go-to'
 
 # This one lives as one per file for all instances with an instanceLookup.
@@ -30,6 +27,8 @@ class ShowTypes
 
   # get expression type under mouse cursor and show it
   showExpressionType: (e) ->
+    {formatTypeAsString, formatTypeAsHtml} = require '../atom-formatting'
+    
     return if @marker? or @locked
 
     pixelPt = pixelPositionFromMouseEvent(@editor, e)
@@ -48,9 +47,11 @@ class ShowTypes
         typeFormatter =
           if @richTypeTooltip then formatTypeAsHtml else formatTypeAsString
         
+        TypeHoverElement = require '../views/type-hover-element'
         element = new TypeHoverElement().initialize(typeFormatter(msg.type))
         
         @domListener?.destroy()
+        DOMListener = require 'dom-listener'
         @domListener = new DOMListener(element)
         @domListener.add "a", 'click', (event) =>
           a = event.target

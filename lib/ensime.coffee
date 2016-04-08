@@ -90,14 +90,13 @@ module.exports = Ensime =
     @implicitControllers = new WeakMap
     @autotypecheckControllers = new WeakMap
 
-    @instanceManager = new (ensimeClient().InstanceManager)
 
     @addCommandsForStoppedState()
     @someInstanceStarted = false
-
+    
     @controlSubscription = atom.workspace.observeTextEditors (editor) =>
       if utils().isScalaSource(editor)
-        instanceLookup = => @instanceManager.instanceOfFile(editor.getPath())
+        instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
         clientLookup = -> instanceLookup()?.client
         if atom.config.get('Ensime.enableTypeTooltip')
           if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new features.ShowTypes(editor, clientLookup))
@@ -117,7 +116,7 @@ module.exports = Ensime =
       if(atom.workspace.isTextEditor(pane) and utils().isScalaSource(pane))
         log.trace('this: ' + this)
         log.trace(['@instanceManager: ', @instanceManager])
-        instance = @instanceManager.instanceOfFile(pane.getPath())
+        instance = @instanceManager?.instanceOfFile(pane.getPath())
         @switchToInstance(instance)
 
   switchToInstance: (instance) ->
@@ -131,7 +130,7 @@ module.exports = Ensime =
 
 
   deactivate: ->
-    @instanceManager.destroyAll()
+    @instanceManager?.destroyAll()
 
     @subscriptions.dispose()
     @controlSubscription.dispose()
@@ -142,9 +141,9 @@ module.exports = Ensime =
 
   clientOfEditor: (editor) ->
     if(editor)
-      @instanceManager.instanceOfFile(editor.getPath())?.client
+      @instanceManager?.instanceOfFile(editor.getPath())?.client
     else
-      @instanceManager.firstInstance()?.client
+      @instanceManager?.firstInstance()?.client
 
   clientOfActiveTextEditor: ->
     @clientOfEditor(atom.workspace.getActiveTextEditor())
@@ -198,7 +197,7 @@ module.exports = Ensime =
 
     typechecking = undefined
     if(@indieLinterRegistry)
-      typechecking = features.TypeCheckingFeature(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
+      typechecking = features.TypeCheckingFeature()(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
 
     StatusbarView = require './views/statusbar-view'
     statusbarView = new StatusbarView()
@@ -217,6 +216,7 @@ module.exports = Ensime =
       }
       instance = new (ensimeClient().Instance)(dotEnsime, client, ui)
 
+      @instanceManager ?= new (ensimeClient().InstanceManager)
       @instanceManager.registerInstance(instance)
       if (not @activeInstance)
         @activeInstance = instance
@@ -269,10 +269,10 @@ module.exports = Ensime =
   selectAndStopAnEnsime: ->
     stopDotEnsime = (selectedDotEnsime) =>
       dotEnsime = dotEnsimeUtils().parseDotEnsime(selectedDotEnsime.path)
-      @instanceManager.stopInstance(dotEnsime)
+      @instanceManager?.stopInstance(dotEnsime)
       @switchToInstance(undefined)
 
-    @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager.isStarted(dotEnsime.path))
+    @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager?.isStarted(dotEnsime.path))
   
   selectAndUpdateAnEnsime: ->
     @selectDotEnsime (selectedDotEnsime) ->

@@ -1,7 +1,7 @@
 fs = require 'fs'
 JsDiff = require 'diff'
 log = require('loglevel').getLogger('ensime.refactorings')
-Promise = require 'bluebird'
+Promise = -> require 'bluebird'
 
 # Refactorings should be cleaned of Atom stuff and put in client module. Add callback for what to do with patches
 module.exports = class Refactorings
@@ -58,14 +58,14 @@ module.exports = class Refactorings
     
     
   applyPatchFromFile: (patchPath) ->
-    Promise.promisify(fs.readFile)(patchPath, 'utf8').then (unifiedDiff) =>
+    Promise().promisify(fs.readFile)(patchPath, 'utf8').then (unifiedDiff) =>
       @applyPatchFromFileContent(unifiedDiff)
     
   applyPatchFromFileContent: (unifiedDiff) ->
     if(unifiedDiff.length > 0)
       @applyPatchesInEditors(unifiedDiff)
     else
-      Promise.resolve()
+      Promise().resolve()
       
   # Very atom specific. move out
   applyPatchesInEditors: (unifiedDiff) ->
@@ -88,8 +88,8 @@ module.exports = class Refactorings
           for {range, toInsert} in actions
             b.setTextInRange(range, toInsert)
       else
-        Promise.reject("Sorry, no file renames yet :(")
-    Promise.all(promises)
+        Promise().reject("Sorry, no file renames yet :(")
+    Promise().all(promises)
           
           
         
