@@ -33,7 +33,8 @@ module.exports = (indieLinter) ->
       log.trace(['lints: ', lints])
       
       doit = ->
-        indieLinter.setMessages(lints)
+        # https://github.com/atom-community/linter/issues/1075
+        indieLinter.setMessages(JSON.parse(JSON.stringify(lints)))
         
       if timeout
         clearTimeout(timeout)
