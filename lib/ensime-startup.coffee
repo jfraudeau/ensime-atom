@@ -73,8 +73,13 @@ startEnsimeServer = (parsedDotEnsime, pidCallback) ->
     else
       startFromCPFile()
 
+updateEnsimeServer = (parsedDotEnsime, callback) ->
+  ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
+  cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
+  updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF, callback)
 
 
 module.exports = {
   startClient: (require 'ensime-client').ensimeClientStartup(startEnsimeServer)
+  updateEnsimeServer: updateEnsimeServer
 }

@@ -12,10 +12,10 @@ goToTypeAtPoint = (client, textBuffer, bufferPosition) ->
 
 goToPosition = (pos) ->
   if(pos.typehint == "LineSourcePosition")
-    atom.workspace.open(pos.file).then (editor) ->
+    atom.workspace.open(pos.file, {pending: true}).then (editor) ->
       editor.setCursorBufferPosition([parseInt(pos.line), 0])
   else
-    atom.workspace.open(pos.file).then (editor) ->
+    atom.workspace.open(pos.file, {pending: true}).then (editor) ->
       targetEditorPos = editor.getBuffer().positionForCharacterIndex(parseInt(pos.offset))
       editor.setCursorBufferPosition(targetEditorPos)
 
