@@ -1,7 +1,7 @@
 {CompositeDisposable} = require 'atom'
 
 # Just a cache slot, maybe not needed if require caches well anyways,
-# but nice to just put all deps in closures as standard
+# but feels useful if we don't know when it's used first.
 c = (resolve) ->
   x = undefined
   ->
@@ -13,20 +13,20 @@ ensimeClient = c -> require 'ensime-client'
 ensimeStartup = c -> require './ensime-startup'
 utils = c -> require './utils'
   
-features =
-  ShowTypes: c -> require './features/show-types'
-  Implicits: c -> require './features/implicits'
-  AutoTypecheck: c -> require './features/auto-typecheck'
-  TypeCheckingFeature: c -> require './features/typechecking'
-  AutocompletePlusProvider: c -> require './features/autocomplete-plus'
-  GoTo: c -> require './features/go-to'
-  documentation: c -> require './features/documentation'
-  ImportSuggestions: c -> require './features/import-suggestions'
-  Refactorings: c -> require './features/refactorings'
+AutocompletePlusProvider = require './features/autocomplete-plus'
+ImportSuggestions = require './features/import-suggestions'
+Refactorings = require './features/refactorings'
+ShowTypes = require './features/show-types'
+Implicits = require './features/implicits'
+AutoTypecheck = require './features/auto-typecheck'
+
+GoTo = c -> require './features/go-to'
+documentation = c -> require './features/documentation'
 
 dotEnsimeUtils = c -> ensimeClient().dotEnsimeUtils
 
 log = undefined
+
 
 scalaSourceSelector = """atom-text-editor[data-grammar="source scala"]"""
 module.exports = Ensime =
@@ -99,18 +99,18 @@ module.exports = Ensime =
         instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
         clientLookup = -> instanceLookup()?.client
         if atom.config.get('Ensime.enableTypeTooltip')
-          if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new features.ShowTypes(editor, clientLookup))
-        if not @implicitControllers.get(editor) then @implicitControllers.set(editor, new features.Implicits(editor, instanceLookup))
-        if not @autotypecheckControllers.get(editor) then @autotypecheckControllers.set(editor, new features.AutoTypecheck(editor, clientLookup))
+          if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new ShowTypes(editor, clientLookup))
+        if not @implicitControllers.get(editor) then @implicitControllers.set(editor, new Implicits(editor, instanceLookup))
+        if not @autotypecheckControllers.get(editor) then @autotypecheckControllers.set(editor, new AutoTypecheck(editor, clientLookup))
 
         @subscriptions.add editor.onDidDestroy () =>
           @deleteControllers editor
 
     clientLookup = (editor) => @clientOfEditor(editor)
-    @autocompletePlusProvider = new features.AutocompletePlusProvider(clientLookup)
+    @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
   
-    @importSuggestions = new features.ImportSuggestions
-    @refactorings = new features.Refactorings
+    @importSuggestions = new ImportSuggestions
+    @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
       if(atom.workspace.isTextEditor(pane) and utils().isScalaSource(pane))
@@ -197,7 +197,8 @@ module.exports = Ensime =
 
     typechecking = undefined
     if(@indieLinterRegistry)
-      typechecking = features.TypeCheckingFeature()(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
+      TypeCheckingFeature = require './features/typechecking'
+      typechecking = TypeCheckingFeature(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
 
     StatusbarView = require './views/statusbar-view'
     statusbarView = new StatusbarView()
@@ -229,9 +230,9 @@ module.exports = Ensime =
 
 
   deleteControllers: (editor) ->
-    deactivateAndDelete = (controller) ->
-      controller.get(editor)?.deactivate()
-      controller.delete(editor)
+    deactivateAndDelete = (map) ->
+      map.get(editor)?.deactivate() # _ref.deactivate is not a function
+      map.delete(editor)
 
     deactivateAndDelete(@showTypesControllers)
     deactivateAndDelete(@implicitControllers)
@@ -263,7 +264,7 @@ module.exports = Ensime =
   selectAndBootAnEnsime: ->
     @selectDotEnsime(
       (selectedDotEnsime) => @startInstance(selectedDotEnsime.path),
-      (dotEnsime) => not @instanceManager.isStarted(dotEnsime.path)
+      (dotEnsime) => not @instanceManager?.isStarted(dotEnsime.path)
     )
 
   selectAndStopAnEnsime: ->
@@ -297,17 +298,17 @@ module.exports = Ensime =
 
   goToDocOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
-    features.documentation().goToDocAtPoint()(@clientOfEditor(editor), editor)
+    documentation().goToDocAtPoint(@clientOfEditor(editor), editor)
 
   goToDocIndex: ->
     editor = atom.workspace.getActiveTextEditor()
-    features.documentation().goToDocIndex(@clientOfEditor(editor))
+    documentation().goToDocIndex(@clientOfEditor(editor))
 
   goToDefinitionOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
     textBuffer = editor.getBuffer()
     pos = editor.getCursorBufferPosition()
-    features.GoTo().goToTypeAtPoint(@clientOfEditor(editor), textBuffer, pos)
+    GoTo().goToTypeAtPoint(@clientOfEditor(editor), textBuffer, pos)
 
   markImplicits: ->
     editor = atom.workspace.getActiveTextEditor()
@@ -358,7 +359,7 @@ module.exports = Ensime =
             range: range
             callback: () ->
               if(client)
-                features.GoTo().goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
+                GoTo().goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
               else
                 atom.notifications.addError("Ensime not started! :(", {
                   dismissable: true
