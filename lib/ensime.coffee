@@ -141,7 +141,11 @@ module.exports = Ensime =
 
   clientOfEditor: (editor) ->
     if(editor)
-      @instanceManager?.instanceOfFile(editor.getPath())?.client
+      instance = @instanceManager?.instanceOfFile(editor.getPath())
+      if instance
+        instance.client
+      else
+        @instanceManager?.firstInstance()?.client
     else
       @instanceManager?.firstInstance()?.client
 
