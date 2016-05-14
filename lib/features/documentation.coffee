@@ -1,4 +1,5 @@
 # Helper for looking up ScalaDoc.
+log = require('loglevel').getLogger('documentation')
 
 class Documentation
 
@@ -32,6 +33,7 @@ class Documentation
     if alreadyUrl then path else "http://#{host}:#{port}/#{path}"
 
   @openDoc = (url) ->
+    log.trace("openDoc")
     split = atom.config.get('Ensime.documentationSplit')
     switch split
       when 'external-browser'
@@ -57,6 +59,7 @@ goToDocAtPoint = (client, editor) ->
   )
 
 goToDocIndex = (client) ->
+  log.trace("goToDocIndex #{client}")
   Documentation.openDoc("http://localhost:#{client.httpPort}/docs")
 
 

@@ -1,40 +1,32 @@
-net = require('net')
-exec = require('child_process').exec
-fs = require 'fs'
-path = require('path')
-_ = require 'lodash'
-
-ensimeClient = require 'ensime-client'
-
-
-{Subscriber} = require 'emissary'
-StatusbarView = require './views/statusbar-view'
 {CompositeDisposable} = require 'atom'
-{startClient, updateEnsimeServer} = require './ensime-startup'
 
+# Just a cache slot, maybe not needed if require caches well anyways,
+# but feels useful if we don't know when it's used first.
+c = (resolve) ->
+  x = undefined
+  ->
+    x ?= resolve()
+    x
+  
+lodash = c -> require 'lodash'
+ensimeClient = c -> require 'ensime-client'
+ensimeStartup = c -> require './ensime-startup'
+utils = c -> require './utils'
+  
+AutocompletePlusProvider = require './features/autocomplete-plus'
+ImportSuggestions = require './features/import-suggestions'
+Refactorings = require './features/refactorings'
 ShowTypes = require './features/show-types'
 Implicits = require './features/implicits'
 AutoTypecheck = require './features/auto-typecheck'
 
-TypeCheckingFeature = require './features/typechecking'
-AutocompletePlusProvider = require './features/autocomplete-plus'
-{modalMsg, isScalaSource, projectPath} = require './utils'
-{goToTypeAtPoint} = require './features/go-to'
-{goToDocIndex, goToDocAtPoint} = require './features/documentation'
-ImportSuggestions = require './features/import-suggestions'
-Refactorings = require './features/refactorings'
+GoTo = c -> require './features/go-to'
+documentation = c -> require './features/documentation'
 
-ImplicitInfo = require './model/implicit-info'
-ImplicitInfoView = require './views/implicit-info-view'
-SelectDotEnsimeView = require './views/select-dot-ensime-view'
-
-{parseDotEnsime, dotEnsimesFilter, allDotEnsimesInPaths} = ensimeClient.dotEnsimeUtils
-InstanceManager = ensimeClient.InstanceManager
-Instance = ensimeClient.Instance
-
-logapi = require('loglevel')
+dotEnsimeUtils = c -> ensimeClient().dotEnsimeUtils
 
 log = undefined
+
 
 scalaSourceSelector = """atom-text-editor[data-grammar="source scala"]"""
 module.exports = Ensime =
@@ -75,6 +67,8 @@ module.exports = Ensime =
 
   activate: (state) ->
     logLevel = atom.config.get('Ensime.logLevel')
+    
+    logapi = require('loglevel')
 
     logapi.getLogger('ensime.client').setLevel(logLevel)
     logapi.getLogger('ensime.server-update').setLevel(logLevel)
@@ -96,14 +90,13 @@ module.exports = Ensime =
     @implicitControllers = new WeakMap
     @autotypecheckControllers = new WeakMap
 
-    @instanceManager = new InstanceManager
 
     @addCommandsForStoppedState()
     @someInstanceStarted = false
-
+    
     @controlSubscription = atom.workspace.observeTextEditors (editor) =>
-      if isScalaSource(editor)
-        instanceLookup = => @instanceManager.instanceOfFile(editor.getPath())
+      if utils().isScalaSource(editor)
+        instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
         clientLookup = -> instanceLookup()?.client
         if atom.config.get('Ensime.enableTypeTooltip')
           if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new ShowTypes(editor, clientLookup))
@@ -116,14 +109,14 @@ module.exports = Ensime =
     clientLookup = (editor) => @clientOfEditor(editor)
     @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
   
-    @importSuggestions = new ImportSuggestions()
+    @importSuggestions = new ImportSuggestions
     @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
-      if(atom.workspace.isTextEditor(pane) and isScalaSource(pane))
+      if(atom.workspace.isTextEditor(pane) and utils().isScalaSource(pane))
         log.trace('this: ' + this)
         log.trace(['@instanceManager: ', @instanceManager])
-        instance = @instanceManager.instanceOfFile(pane.getPath())
+        instance = @instanceManager?.instanceOfFile(pane.getPath())
         @switchToInstance(instance)
 
   switchToInstance: (instance) ->
@@ -137,7 +130,7 @@ module.exports = Ensime =
 
 
   deactivate: ->
-    @instanceManager.destroyAll()
+    @instanceManager?.destroyAll()
 
     @subscriptions.dispose()
     @controlSubscription.dispose()
@@ -148,9 +141,9 @@ module.exports = Ensime =
 
   clientOfEditor: (editor) ->
     if(editor)
-      @instanceManager.instanceOfFile(editor.getPath())?.client
+      @instanceManager?.instanceOfFile(editor.getPath())?.client
     else
-      @instanceManager.firstInstance()?.client
+      @instanceManager?.firstInstance()?.client
 
   clientOfActiveTextEditor: ->
     @clientOfEditor(atom.workspace.getActiveTextEditor())
@@ -183,6 +176,8 @@ module.exports = Ensime =
 
 
   startInstance: (dotEnsimePath) ->
+    ImplicitInfo = require './model/implicit-info'
+    ImplicitInfoView = require './views/implicit-info-view'
 
     # Register model-view mappings
     @subscriptions.add atom.views.addViewProvider ImplicitInfo, (implicitInfo) ->
@@ -198,16 +193,18 @@ module.exports = Ensime =
       @addCommandsForStartedState()
       @someInstanceStarted = true
 
-    dotEnsime = parseDotEnsime(dotEnsimePath)
+    dotEnsime = dotEnsimeUtils().parseDotEnsime(dotEnsimePath)
 
     typechecking = undefined
     if(@indieLinterRegistry)
+      TypeCheckingFeature = require './features/typechecking'
       typechecking = TypeCheckingFeature(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
 
+    StatusbarView = require './views/statusbar-view'
     statusbarView = new StatusbarView()
     statusbarView.init()
 
-    startClient(dotEnsime, @statusbarOutput(statusbarView, typechecking), (client) =>
+    ensimeStartup().startClient(dotEnsime, @statusbarOutput(statusbarView, typechecking), (client) =>
       atom.notifications.addSuccess("Ensime connected!")
       
       # atom specific ui state of an instance
@@ -218,8 +215,9 @@ module.exports = Ensime =
           statusbarView.destroy()
           typechecking?.destroy()
       }
-      instance = new Instance(dotEnsime, client, ui)
+      instance = new (ensimeClient().Instance)(dotEnsime, client, ui)
 
+      @instanceManager ?= new (ensimeClient().InstanceManager)
       @instanceManager.registerInstance(instance)
       if (not @activeInstance)
         @activeInstance = instance
@@ -232,9 +230,9 @@ module.exports = Ensime =
 
 
   deleteControllers: (editor) ->
-    deactivateAndDelete = (controller) ->
-      controller.get(editor)?.deactivate()
-      controller.delete(editor)
+    deactivateAndDelete = (map) ->
+      map.get(editor)?.deactivate() # _ref.deactivate is not a function
+      map.delete(editor)
 
     deactivateAndDelete(@showTypesControllers)
     deactivateAndDelete(@implicitControllers)
@@ -248,15 +246,17 @@ module.exports = Ensime =
   # Shows dialog to select a .ensime under this project paths and calls callback with parsed
   selectDotEnsime: (callback, filter = -> true) ->
     dirs = atom.project.getPaths()
-  
-    allDotEnsimesInPaths(dirs).then (dotEnsimes) ->
+    _ = lodash()
+    dotEnsimeUtils().allDotEnsimesInPaths(dirs).then (dotEnsimes) ->
       filteredDotEnsime = _.filter(dotEnsimes, filter)
 
+
       if(filteredDotEnsime.length == 0)
-        modalMsg("No .ensime file found. Please generate with `sbt gen-ensime` or similar")
+        utils().modalMsg("No .ensime file found. Please generate with `sbt gen-ensime` or similar")
       else if (filteredDotEnsime.length == 1)
         callback(filteredDotEnsime[0])
       else
+        SelectDotEnsimeView = require './views/select-dot-ensime-view'
         new SelectDotEnsimeView(filteredDotEnsime, (selectedDotEnsime) ->
           callback(selectedDotEnsime)
         )
@@ -264,21 +264,21 @@ module.exports = Ensime =
   selectAndBootAnEnsime: ->
     @selectDotEnsime(
       (selectedDotEnsime) => @startInstance(selectedDotEnsime.path),
-      (dotEnsime) => not @instanceManager.isStarted(dotEnsime.path)
+      (dotEnsime) => not @instanceManager?.isStarted(dotEnsime.path)
     )
 
   selectAndStopAnEnsime: ->
     stopDotEnsime = (selectedDotEnsime) =>
-      dotEnsime = parseDotEnsime(selectedDotEnsime.path)
-      @instanceManager.stopInstance(dotEnsime)
+      dotEnsime = dotEnsimeUtils().parseDotEnsime(selectedDotEnsime.path)
+      @instanceManager?.stopInstance(dotEnsime)
       @switchToInstance(undefined)
 
-    @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager.isStarted(dotEnsime.path))
+    @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager?.isStarted(dotEnsime.path))
   
   selectAndUpdateAnEnsime: ->
     @selectDotEnsime (selectedDotEnsime) ->
-      dotEnsime = parseDotEnsime(selectedDotEnsime.path)
-      updateEnsimeServer(dotEnsime, -> atom.notifications.addSuccess("Updated!"))
+      dotEnsime = dotEnsimeUtils().parseDotEnsime(selectedDotEnsime.path)
+      ensimeStartup().updateEnsimeServer(dotEnsime, -> atom.notifications.addSuccess("Updated!"))
     
 
   typecheckAll: ->
@@ -298,17 +298,17 @@ module.exports = Ensime =
 
   goToDocOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
-    goToDocAtPoint(@clientOfEditor(editor), editor)
+    documentation().goToDocAtPoint(@clientOfEditor(editor), editor)
 
   goToDocIndex: ->
     editor = atom.workspace.getActiveTextEditor()
-    goToDocIndex(@clientOfEditor(editor))
+    documentation().goToDocIndex(@clientOfEditor(editor))
 
   goToDefinitionOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
     textBuffer = editor.getBuffer()
     pos = editor.getCursorBufferPosition()
-    goToTypeAtPoint(@clientOfEditor(editor), textBuffer, pos)
+    GoTo().goToTypeAtPoint(@clientOfEditor(editor), textBuffer, pos)
 
   markImplicits: ->
     editor = atom.workspace.getActiveTextEditor()
@@ -353,13 +353,13 @@ module.exports = Ensime =
     {
       providerName: 'ensime-atom'
       getSuggestionForWord: (textEditor, text, range) =>
-        if isScalaSource(textEditor)
+        if utils().isScalaSource(textEditor)
           client = @clientOfEditor(textEditor)
           {
             range: range
             callback: () ->
               if(client)
-                goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
+                GoTo().goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
               else
                 atom.notifications.addError("Ensime not started! :(", {
                   dismissable: true
@@ -379,7 +379,7 @@ module.exports = Ensime =
     getIntentions = (req) =>
       textEditor = req.textEditor
       bufferPosition = req.bufferPosition
-      
+      _ = lodash()
       new Promise (resolve) =>
         @importSuggestions.getImportSuggestions(
           @clientOfEditor(textEditor),

@@ -67,16 +67,12 @@ withSbt = (callback) ->
 
 # create classpath file name for ensime server startup
 mkClasspathFileName = (scalaVersion, ensimeServerVersion) ->
-  path.join(atom.packages.resolvePackagePath('Ensime'), "classpath_#{scalaVersion}_#{ensimeServerVersion}")
+  path.join(packageDir(), "classpath_#{scalaVersion}_#{ensimeServerVersion}")
 
 mkAssemblyJarFileName = (scalaEdition, ensimeServerVersion) ->
-  path.join(atom.packages.resolvePackagePath('Ensime'),
-    "ensime_#{scalaEdition}-#{ensimeServerVersion}-assembly.jar")
+  path.join(packageDir(), "ensime_#{scalaEdition}-#{ensimeServerVersion}-assembly.jar")
 
-packageDir = ->
-  packageDir = atom.packages.resolvePackagePath('Ensime')
-  log.trace('packageDir: ' + packageDir)
-  packageDir
+packageDir = -> atom.packages.resolvePackagePath('Ensime')
 
 module.exports = {
   isScalaSource,

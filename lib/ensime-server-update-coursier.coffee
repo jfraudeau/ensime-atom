@@ -19,7 +19,7 @@ failure = (msg, code) ->
     detail: "Exit code: #{code}"
   })
   
-tempdir = packageDir() + path.sep + "ensime_update_coursier"
+tempdir = path.join(packageDir(), "ensime_update_coursier")
 
 
 module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, getPidLogger, failure)

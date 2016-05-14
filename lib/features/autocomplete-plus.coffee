@@ -1,4 +1,3 @@
-{formatCompletionsSignature} = (require '../atom-formatting')
 SubAtom = require 'sub-atom'
 log = require('loglevel').getLogger('ensime.autocomplete-plus-provider')
 
@@ -12,6 +11,7 @@ module.exports = (clientLookup) ->
   {
     dispose: -> disposables.dispose()
     getCompletions: (textBuffer, bufferPosition, callback) ->
+      {formatCompletionsSignature} = (require '../atom-formatting')
       file = textBuffer.getPath()
       offset = textBuffer.characterIndexForPosition(bufferPosition)
       clientLookup(textBuffer)?.getCompletions(file, textBuffer.getText(), offset, noOfAutocompleteSuggestions, (result) ->

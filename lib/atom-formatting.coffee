@@ -1,6 +1,5 @@
 client = require 'ensime-client'
 
-
 # Atom specific formatting
 {formatType, formatTypeWith, fixQualifiedTypeName, fixShortTypeName} = client.formatting
 
