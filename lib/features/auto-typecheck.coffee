@@ -15,7 +15,10 @@ class AutoTypecheck
       if(value == 'typing')
         @typecheckWhileTypingDisposable = @editor.onDidStopChanging () =>
           b = @editor.getBuffer()
-          @clientLookup()?.typecheckBuffer(b.getPath(), b.getText())
+          p = b.getPath()
+          # Don't typecheck deps
+          if(not p.includes('dep-src'))
+            @clientLookup()?.typecheckBuffer(p, b.getText())
         @disposables.add @typecheckWhileTypingDisposable
       else
         @disposables.remove @typecheckWhileTypingDisposable
