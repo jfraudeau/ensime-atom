@@ -72,7 +72,7 @@ mkClasspathFileName = (scalaVersion, ensimeServerVersion) ->
 mkAssemblyJarFileName = (scalaEdition, ensimeServerVersion) ->
   path.join(packageDir(), "ensime_#{scalaEdition}-#{ensimeServerVersion}-assembly.jar")
 
-packageDir = -> atom.packages.resolvePackagePath('Ensime')
+packageDir = -> atom.packages.getActivePackage('Ensime').path
 
 module.exports = {
   isScalaSource,

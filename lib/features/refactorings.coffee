@@ -10,13 +10,7 @@ module.exports = class Refactorings
     @ensimeRefactorId = 1
 
   getRefactorPatch: (client, refactoring, interactive, callback) ->
-    msg =
-      typehint: 'RefactorReq'
-      procId: @ensimeRefactorId++
-      params: refactoring
-      interactive: interactive
-
-    client.post(msg, callback)
+    client.getRefactoringPatch(@ensimeRefactorId++, refactoring).then callback
 
   getAddImportPatch: (client, qualifiedName, file, callback) ->
     @getRefactorPatch(client,
@@ -110,7 +104,7 @@ module.exports = class Refactorings
   doImport: (client, name, file, buffer, callback = ->) ->
     @getAddImportPatch(client, name, file, (importResponse) =>
       @maybeApplyPatch(importResponse, () ->
-        client.typecheckBuffer(buffer.getPath(), buffer.getText(), callback)
+        client.typecheckBuffer(buffer.getPath(), buffer.getText()).then callback
       )
     )
   

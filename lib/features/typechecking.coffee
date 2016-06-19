@@ -3,8 +3,6 @@ _ = require 'lodash'
 {isScalaSource} = require '../utils'
 log = require('loglevel').getLogger('ensime.typechecking')
 
-
-
 module.exports = (indieLinter) ->
   lints = []
   timeout = undefined

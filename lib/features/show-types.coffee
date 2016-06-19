@@ -37,7 +37,7 @@ class ShowTypes
     offset = @editor.getBuffer().characterIndexForPosition(bufferPt)
 
     client = @clientLookup()
-    client?.getSymbolAtPoint(@editor.getPath(), offset, (msg) =>
+    client?.getSymbolAtPoint(@editor.getPath(), offset).then((msg) =>
       @marker?.destroy()
       
       return if(msg.type.fullName == "<none>")
@@ -75,7 +75,8 @@ class ShowTypes
           @unstickCommand?.dispose()
           @unstickCommand = atom.commands.add 'atom-workspace', "core:cancel", =>
             @unstickAndHide()
-    )
+    ).catch (err) ->
+      # Do nothing, this happens when hovering on "stuff"
       
   unstickAndHide: ->
     @unstickCommand.dispose()

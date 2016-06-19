@@ -11,11 +11,11 @@ module.exports = ->
 
   client = undefined
   
-  toggle = (newClient) ->
+  toggle = (newApi) ->
     if modalPanel.isVisible()
       modalPanel.hide()
     else
-      client = newClient
+      client = newApi
       modalPanel.show()
       vue.focusSearchField()
 
@@ -23,15 +23,10 @@ module.exports = ->
     modalPanel.hide()
   
   vue.onSearchTextUpdated (newText, oldText) ->
-    req =
-      typehint: "PublicSymbolSearchReq"
-      keywords: newText.split(' ')
-      maxResults: maxSymbols
-
-    client.post(req, (msg) ->
+    client.searchPublicSymbols(newText.split(' '), maxSymbols).then (msg) ->
       vue.results = msg.syms
       vue.selected = 0
-    )
+    
 
   atom.commands.add vue.$el,
     'core:move-up': (event) ->

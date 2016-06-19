@@ -52,11 +52,11 @@ goToDocAtPoint = (client, editor) ->
       file: editor.getBuffer().getPath()
       point: point
 
-    client.post(req, (msg) ->
+    client.post(req).then msg ->
       switch msg.typehint
         when "FalseResponse" then atom.notifications.addError("No documentation found")
         else Documentation.openDoc(Documentation.formUrl("localhost", client.httpPort, msg.text))
-  )
+  
 
 goToDocIndex = (client) ->
   log.trace("goToDocIndex #{client}")

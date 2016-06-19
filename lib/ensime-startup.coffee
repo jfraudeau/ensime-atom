@@ -3,6 +3,7 @@ fs = require 'fs'
 path = require 'path'
 _ = require 'lodash'
 
+Promise = require 'bluebird'
 ensimeClient = require ('ensime-client')
 
 {packageDir, withSbt, mkClasspathFileName, mkAssemblyJarFileName} = require('./utils')
@@ -10,7 +11,7 @@ ensimeClient = require ('ensime-client')
 console.log(['ensimeClient', ensimeClient])
 {updateEnsimeServer} = ensimeClient.ensimeServerUpdate
 {parseDotEnsime} = ensimeClient.dotEnsimeUtils
-{startServerFromFile, startServerFromAssemblyJar} = ensimeClient
+{startServerFromFile, startServerFromAssemblyJar, clientStarterFromServerStarter} = ensimeClient
 
 updateEnsimeServerWithCoursier = require './ensime-server-update-coursier'
 log = require('loglevel').getLogger('ensime.startup')
@@ -54,7 +55,8 @@ classpathFileOk = (cpF) ->
 
 
 # Start ensime server. If classpath file is out of date, make an update first
-startEnsimeServer = (parsedDotEnsime, pidCallback) ->
+# (project: DotEnsime): Promise<ChildProcess>
+startEnsimeServer = (parsedDotEnsime) ->
   if not fs.existsSync(parsedDotEnsime.cacheDir)
     fs.mkdirSync(parsedDotEnsime.cacheDir)
 
@@ -64,22 +66,22 @@ startEnsimeServer = (parsedDotEnsime, pidCallback) ->
   assemblyJar = mkAssemblyJarFileName(parsedDotEnsime.scalaEdition, ensimeServerVersion)
   
   if(fs.existsSync(assemblyJar))
-    startServerFromAssemblyJar(assemblyJar, parsedDotEnsime, ensimeServerFlags, pidCallback)
+    Promise.resolve(startServerFromAssemblyJar(assemblyJar, parsedDotEnsime, ensimeServerFlags))
   else
     cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
-    startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerFlags, pidCallback)
+    # startServerFromFile(classpathFile: string, dotEnsime: DotEnsime, ensimeServerFlags = ""): Promise<ChildProcess>
+    startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerFlags)
     if(not classpathFileOk(cpF))
-      updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF, startFromCPFile)
+      updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF).then(startFromCPFile)
     else
       startFromCPFile()
 
 updateEnsimeServer = (parsedDotEnsime, callback) ->
   ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
   cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
-  updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF, callback)
-
+  updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF).then(callback)
 
 module.exports = {
-  startClient: (require 'ensime-client').ensimeClientStartup(startEnsimeServer)
+  startClient: clientStarterFromServerStarter(startEnsimeServer) #
   updateEnsimeServer: updateEnsimeServer
 }

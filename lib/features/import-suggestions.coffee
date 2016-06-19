@@ -1,15 +1,8 @@
-# Super quick one that just adds the first in list
+# TODO: move to API
 module.exports = class ImportSuggestions
   constructor: ->
-    @refactorings = new (require('./refactorings'))
 
-  useFirst: (res) ->
-    # TODO: Add ui for selection
-    name = res.symLists[0][0].name
-    
-    @refactorings.doImport(client, name, file, buffer)
-    
-  getImportSuggestions: (client, buffer, pos, symbol, callback = @useFirst) ->
+  getImportSuggestions: (client, buffer, pos, symbol) ->
     file = buffer.getPath()
 
     req =
@@ -19,4 +12,4 @@ module.exports = class ImportSuggestions
       names: [symbol]
       maxResults: 10
 
-    client.post(req, callback)
+    client.post(req)
