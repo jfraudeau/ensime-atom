@@ -56,11 +56,11 @@ class ShowTypes
         @domListener.add "a", 'click', (event) =>
           a = event.target
           qualifiedName = decodeURIComponent(a.dataset.qualifiedName)
-          client.symbolByName(qualifiedName, (response) =>
+          client.symbolByName(qualifiedName).then (response) =>
             if(response.declPos)
               goToPosition(response.declPos)
               @unstickAndHide()
-          )
+          
           
         @overlayDecoration = @editor.decorateMarker(@marker, {
           type: 'overlay'
