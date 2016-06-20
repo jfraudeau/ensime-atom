@@ -144,12 +144,16 @@ module.exports = Ensime =
       if instance
         instance.api
       else
-        @instanceManager?.firstInstance()?.api
+        undefined
     else
-      @instanceManager?.firstInstance()?.api
+      undefined
 
   apiOfOfActiveTextEditor: ->
-    @apiOfEditor(atom.workspace.getActiveTextEditor())
+    activeTextEditor = atom.workspace.getActiveTextEditor()
+    if activeTextEditor
+      @apiOfEditor(activeTextEditor)
+    else
+      @instanceManager?.firstInstance()
 
   # TODO: move out
   statusbarOutput: (statusbarView, typechecking) -> (msg) ->
@@ -368,7 +372,6 @@ module.exports = Ensime =
                 GoTo().goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
               else
                 atom.notifications.addError("Ensime not started! :(", {
-                  dismissable: true
                   detail: "There is no running ensime instance for this particular file. Please start ensime first!"
                   })
           }
