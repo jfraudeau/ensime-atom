@@ -3,14 +3,10 @@ goToTypeAtPoint = (client, textBuffer, bufferPosition) ->
 
   client.getSymbolAtPoint(textBuffer.getPath(), offset).then((msg) ->
     pos = msg.declPos
-    # Sometimes no pos
-    if(pos)
-      goToPosition(pos)
-    else
-      atom.notifications.addError("No declPos in response from Ensime server, cannot go anywhere :(")
-  ).error((err) ->
-    log.error(err)
-    )
+    goToPosition(pos)
+  ).catch((err) ->
+    atom.notifications.addError("No declPos in response from Ensime server, cannot go anywhere :(")
+  )
 
 goToPosition = (pos) ->
   if(pos.typehint == "LineSourcePosition")
