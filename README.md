@@ -26,7 +26,7 @@ Documentation is available at [ensime.org](http://ensime.org/editors/atom/)
 ## Getting Started Summary
 
 1. After installation go to the Atom ENSIME package settings and set the path to sbt.
-2. Use the `gen-ensime` command in sbt to generate a _.ensime_ file.
+2. Use the `ensimeConfig` command in sbt to generate a _.ensime_ file.
 3.  cmd-shift-P Ensime: Start
 
 See the full documentation for more details.
