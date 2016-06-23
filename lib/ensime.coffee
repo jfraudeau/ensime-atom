@@ -252,7 +252,7 @@ module.exports = Ensime =
 
 
       if(filteredDotEnsime.length == 0)
-        utils().modalMsg("No .ensime file found. Please generate with `sbt gen-ensime` or similar")
+        utils().modalMsg("No .ensime file found. Please generate with `sbt ensimeConfig` or similar")
       else if (filteredDotEnsime.length == 1)
         callback(filteredDotEnsime[0])
       else
