@@ -1,6 +1,7 @@
 {bufferPositionFromMouseEvent, pixelPositionFromMouseEvent, getElementsByClass} = require '../utils'
 SubAtom = require('sub-atom')
 {goToPosition} = require './go-to'
+log = require('loglevel').getLogger('ensime.show-types')
 
 # This one lives as one per file for all instances with an instanceLookup.
 class ShowTypes
@@ -11,23 +12,28 @@ class ShowTypes
     @editorView = atom.views.getView(@editor)
     @editorElement = @editorView.rootElement
 
-    @disposables.add @editorElement, 'mousemove', '.scroll-view', (e) =>
-      @clearExprTypeTimeout()
-      @exprTypeTimeout = setTimeout (=>
-        @showExpressionType e
-      ), 100
+    atom.config.observe 'Ensime.enableTypeTooltip', (enabled) =>
+      if(enabled)
+        @disposables.add @editorElement, 'mousemove', '.scroll-view', (e) =>
+          @clearExprTypeTimeout()
+          @exprTypeTimeout = setTimeout (=>
+            @showExpressionType e
+          ), 100
 
-    @disposables.add @editorElement, 'mouseout', '.scroll-view', (e) =>
-      @clearExprTypeTimeout()
+        @disposables.add @editorElement, 'mouseout', '.scroll-view', (e) =>
+          @clearExprTypeTimeout()
 
-    @disposables.add @editor.onDidDestroy =>
-      @deactivate()
-      
-    @disposables.add atom.config.observe 'Ensime.richTypeTooltip', (@richTypeTooltip) =>
+        @disposables.add @editor.onDidDestroy =>
+          @deactivate()
+          
+        @disposables.add atom.config.observe 'Ensime.richTypeTooltip', (@richTypeTooltip) =>
+      else
+        @deactivate()
+        # @disposables.dispose()
 
   # get expression type under mouse cursor and show it
   showExpressionType: (e) ->
-    {formatTypeAsString, formatTypeAsHtml} = require '../atom-formatting'
+    {formatTypeAsString, formatTypeAsHtml, typeConstructorFromName} = require '../atom-formatting'
     
     return if @marker? or @locked
 

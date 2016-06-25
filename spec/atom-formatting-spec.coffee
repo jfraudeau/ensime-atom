@@ -1,5 +1,5 @@
 root = '..'
-{formatTypeAsHtml, formatCompletionsSignature} = require "#{root}/lib/atom-formatting"
+{formatTypeAsHtml, formatTypeAsString, formatCompletionsSignature} = require "#{root}/lib/atom-formatting"
 
 describe 'rich atom specific type hover formatter', ->
   it "should format |@| correctly", ->
@@ -51,6 +51,56 @@ describe 'rich atom specific type hover formatter', ->
         }
     """
     type = JSON.parse(typeStr)
+  
+
+describe 'type-hover', ->
+
+  thing = {
+    "name": "LanguageFeatureImport.Thing[LanguageFeatureImport.Thing.T]",
+    "localName": "Thing",
+    "typehint": "SymbolInfo",
+    "declPos": {
+      "typehint": "OffsetSourcePosition",
+      "file": "/Users/viktor/dev/projects/ensime-test-project/src/main/scala/LanguageFeatureImport.scala",
+      "offset": 49
+    },
+    "type": {
+      "name": "Thing[T]",
+      "fullName": "LanguageFeatureImport.Thing[LanguageFeatureImport.Thing.T]",
+      "pos": {
+        "typehint": "OffsetSourcePosition",
+        "file": "/Users/viktor/dev/projects/ensime-test-project/src/main/scala/LanguageFeatureImport.scala",
+        "offset": 49
+      },
+      "typehint": "BasicTypeInfo",
+      "typeArgs": [
+        {
+          "name": "T",
+          "fullName": "LanguageFeatureImport.Thing.T",
+          "typehint": "BasicTypeInfo",
+          "typeArgs": [],
+          "members": [],
+          "declAs": {
+            "typehint": "Nil"
+          }
+        }
+      ],
+      "members": [],
+      "declAs": {
+        "typehint": "Class"
+      }
+    },
+    "isCallable": false
+  }
+  it 'should format type variables correctly in simple strings', ->
+    string = formatTypeAsString(thing.type)
+    expect(string).toBe("Thing[T]")
+    
+  it 'should format type variables correctly in rich html', ->
+    html = formatTypeAsHtml(thing.type)
+    expected = """<a data-qualified-name="LanguageFeatureImport.Thing%5BLanguageFeatureImport.Thing.T%5D" title="LanguageFeatureImport.Thing%5BLanguageFeatureImport.Thing.T%5D">Thing</a>[<a data-qualified-name="LanguageFeatureImport.Thing.T" title="LanguageFeatureImport.Thing.T">T</a>]"""
+    expect(html).toBe(expected)
+    
     
     
 describe 'formatCompletionsSignature', ->

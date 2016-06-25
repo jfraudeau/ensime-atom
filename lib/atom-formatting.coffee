@@ -1,12 +1,12 @@
 client = require 'ensime-client'
 
 # Atom specific formatting
-{formatType, formatTypeWith, fixQualifiedTypeName, fixShortTypeName} = client.formatting
+{formatType, formatTypeWith, fixQualifiedTypeName, fixShortTypeName, typeConstructorFromName} = client.formatting
 
 formatTypeNameAsHtmlWithLink = (theType) ->
-  qualifiedName = encodeURIComponent(fixQualifiedTypeName(theType))
+  qualifiedTypeConstructor = encodeURIComponent(typeConstructorFromName(fixQualifiedTypeName(theType)))
   shortName = fixShortTypeName(theType)
-  """<a data-qualified-name="#{qualifiedName}" title="#{qualifiedName}">#{shortName}</a>"""
+  """<a data-qualified-name="#{qualifiedTypeConstructor}" title="#{qualifiedTypeConstructor}">#{shortName}</a>"""
 
 
 # Format for autocomplete-plus
@@ -32,5 +32,6 @@ formatTypeAsHtml = formatTypeWith formatTypeNameAsHtmlWithLink
 module.exports = {
   formatTypeAsString: formatType,
   formatTypeAsHtml,
-  formatCompletionsSignature
+  formatCompletionsSignature,
+  typeConstructorFromName
 }
