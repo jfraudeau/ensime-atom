@@ -62,6 +62,7 @@ class ShowTypes
         @domListener.add "a", 'click', (event) =>
           a = event.target
           qualifiedName = decodeURIComponent(a.dataset.qualifiedName)
+          log.debug("asking for symbol by name: ", qualifiedName)
           client.symbolByName(qualifiedName).then (response) =>
             if(response.declPos)
               goToPosition(response.declPos)

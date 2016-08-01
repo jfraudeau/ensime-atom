@@ -14,7 +14,6 @@ ensimeStartup = c -> require './ensime-startup'
 utils = c -> require './utils'
   
 AutocompletePlusProvider = require './features/autocomplete-plus'
-ImportSuggestions = require './features/import-suggestions'
 Refactorings = require './features/refactorings'
 ShowTypes = require './features/show-types'
 Implicits = require './features/implicits'
@@ -66,11 +65,15 @@ module.exports = Ensime =
 
 
   activate: (state) ->
+    @subscriptions = new CompositeDisposable
+
+    @subscriptions.add atom.config.observe 'Ensime.typecheckWhen', (value) ->
+    
     logLevel = atom.config.get('Ensime.logLevel')
     
     logapi = require('loglevel')
 
-    logapi.getLogger('ensime.client').setLevel(logLevel)
+    logapi.getLogger('ensime-client').setLevel(logLevel)
     logapi.getLogger('ensime.server-update').setLevel(logLevel)
     logapi.getLogger('ensime.startup').setLevel(logLevel)
     logapi.getLogger('ensime.autocomplete-plus-provider').setLevel(logLevel)
@@ -83,7 +86,6 @@ module.exports = Ensime =
       (require 'atom-package-deps').install('Ensime').then ->
         log.trace('Ensime dependencies installed, good to go!')
 
-    @subscriptions = new CompositeDisposable
 
     # Feature controllers
     @showTypesControllers = new WeakMap
@@ -98,8 +100,7 @@ module.exports = Ensime =
       if utils().isScalaSource(editor)
         instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
         clientLookup = -> instanceLookup()?.api
-        if atom.config.get('Ensime.enableTypeTooltip')
-          if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new ShowTypes(editor, clientLookup))
+        if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new ShowTypes(editor, clientLookup))
         if not @implicitControllers.get(editor) then @implicitControllers.set(editor, new Implicits(editor, instanceLookup))
         if not @autotypecheckControllers.get(editor) then @autotypecheckControllers.set(editor, new AutoTypecheck(editor, clientLookup))
 
@@ -109,7 +110,6 @@ module.exports = Ensime =
     clientLookup = (editor) => @apiOfEditor(editor)
     @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
   
-    @importSuggestions = new ImportSuggestions
     @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
@@ -390,12 +390,11 @@ module.exports = Ensime =
       bufferPosition = req.bufferPosition
       _ = lodash()
       new Promise (resolve) =>
-        @importSuggestions.getImportSuggestions(
-          @apiOfEditor(textEditor),
-          textEditor.getBuffer(),
+        @apiOfEditor(textEditor)?.getImportSuggestions(
+          textEditor.getPath(),
           textEditor.getBuffer().characterIndexForPosition(bufferPosition),
-          textEditor.getWordUnderCursor()).then res =>
-            resolve(_.map(res.symLists[0], (sym) =>
+          textEditor.getWordUnderCursor()).then (res) =>
+            result = _.map(res.symLists[0], (sym) =>
               onSelected = => @refactorings.doImport(@apiOfEditor(textEditor), sym.name, textEditor.getPath(), textEditor.getBuffer())
               {
                 priority: 100
@@ -404,7 +403,8 @@ module.exports = Ensime =
                 title: "import #{sym.name}"
                 selected: onSelected
               }
-            ))
+            )
+            resolve(result)
           
     {
       grammarScopes: ['source.scala']

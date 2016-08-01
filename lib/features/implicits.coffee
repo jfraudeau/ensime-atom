@@ -54,7 +54,8 @@ class Implicits
     # If source path is under sourceRoots and modified, typecheck it first
     if(instance)
       if(instance.isSourceOf(@editor.getPath()) and @editor.isModified())
-        instance.client.typecheckBuffer(b.getPath(), b.getText(), (typecheckResult) -> continuation())
+        instance.api.typecheckBuffer(b.getPath(), b.getText()).then (typecheckResult) ->
+          continuation()
       else
         continuation()
         
