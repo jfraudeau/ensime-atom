@@ -19,8 +19,6 @@ testDiffApplication = (fileName, before, diff, expected) ->
       result = editor.getText()
       expect(result).toEqual(expected)
   
-  "hej"
-
 describe 'applyPatchesInEditors', ->
   
   beforeEach ->

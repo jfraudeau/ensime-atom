@@ -2,6 +2,7 @@ fs = require 'fs'
 JsDiff = require 'diff'
 log = require('loglevel').getLogger('ensime.refactorings')
 Promise = -> require 'bluebird'
+_ = require 'lodash'
 
 # Refactorings should be cleaned of Atom stuff and put in client module. Add callback for what to do with patches
 module.exports = class Refactorings
