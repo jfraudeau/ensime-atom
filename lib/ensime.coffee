@@ -341,7 +341,7 @@ module.exports = Ensime =
 
       getSuggestions: ({editor, bufferPosition, scopeDescriptor, prefix}) ->
         provider = getProvider()
-        if (provider && /[a-z]/i.test(prefix))
+        if (provider && /[a-z.]/i.test(prefix))
           new Promise (resolve) ->
             log.trace('ensime.getSuggestions')
             provider.getCompletions(editor.getBuffer(), bufferPosition, resolve)
