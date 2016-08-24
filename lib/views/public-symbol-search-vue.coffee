@@ -31,6 +31,7 @@ module.exports = PublicSymbolSearchVue = Vue.extend({
       # TODO: kill of watcher when unmounted?
 
     focusSearchField: () ->
+      this.searchText = '' # reset text on every new focus
       @$refs.editor.$el.focus()
 
     getSelected: () ->

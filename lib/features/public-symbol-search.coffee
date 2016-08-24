@@ -9,13 +9,13 @@ module.exports = ->
   vue = new SymbolSearchVue
   modalPanel = addModalPanel(vue, false)
 
-  client = undefined
+  api = undefined
   
   toggle = (newApi) ->
     if modalPanel.isVisible()
       modalPanel.hide()
     else
-      client = newApi
+      api = newApi
       modalPanel.show()
       vue.focusSearchField()
 
@@ -23,7 +23,7 @@ module.exports = ->
     modalPanel.hide()
   
   vue.onSearchTextUpdated (newText, oldText) ->
-    client.searchPublicSymbols(newText.split(' '), maxSymbols).then (msg) ->
+    api.searchPublicSymbols(newText.split(' '), maxSymbols).then (msg) ->
       vue.results = msg.syms
       vue.selected = 0
     

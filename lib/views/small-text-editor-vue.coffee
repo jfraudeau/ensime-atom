@@ -5,8 +5,12 @@ module.exports = TextEditorVue = Vue.extend({
   methods:
     getTextEditor: () -> @$el.getModel()
   ready: () ->
+    # two ways-bind to the Atom texteditor stuff
     @$el.getModel().getBuffer().onDidChange =>
       @text = @$el.getModel().getBuffer().getText()
+    
+    @watcher = @$watch('text', (text) -> @$el.getModel().getBuffer().setText(@text))
+      
   props: ['text']
 
 })
