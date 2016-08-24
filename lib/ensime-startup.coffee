@@ -61,6 +61,7 @@ startEnsimeServer = (parsedDotEnsime) ->
     fs.mkdirSync(parsedDotEnsime.cacheDir)
 
   ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
+  log.debug(['ensime server version', ensimeServerVersion])
 
   ensimeServerFlags = atom.config.get('Ensime.ensimeServerFlags')
   assemblyJar = mkAssemblyJarFileName(parsedDotEnsime.scalaEdition, ensimeServerVersion)
@@ -72,6 +73,7 @@ startEnsimeServer = (parsedDotEnsime) ->
     # startServerFromFile(classpathFile: string, dotEnsime: DotEnsime, ensimeServerFlags = ""): Promise<ChildProcess>
     startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerFlags)
     if(not classpathFileOk(cpF))
+      atom.notifications.addInfo("Updating server classpath")
       updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF).then(startFromCPFile)
     else
       startFromCPFile()
@@ -79,6 +81,7 @@ startEnsimeServer = (parsedDotEnsime) ->
 updateEnsimeServer = (parsedDotEnsime, callback) ->
   ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
   cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
+  log.debug(['ensime server version', ensimeServerVersion])
   updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF).then(callback)
 
 module.exports = {
