@@ -98,7 +98,7 @@ describe 'type-hover', ->
     
   it 'should format type variables correctly in rich html', ->
     html = formatTypeAsHtml(thing.type)
-    expected = """<a data-qualified-name="LanguageFeatureImport.Thing%5BLanguageFeatureImport.Thing.T%5D" title="LanguageFeatureImport.Thing%5BLanguageFeatureImport.Thing.T%5D">Thing</a>[<a data-qualified-name="LanguageFeatureImport.Thing.T" title="LanguageFeatureImport.Thing.T">T</a>]"""
+    expected = """<a data-qualified-name="LanguageFeatureImport.Thing" title="LanguageFeatureImport.Thing">Thing</a>[<a data-qualified-name="LanguageFeatureImport.Thing.T" title="LanguageFeatureImport.Thing.T">T</a>]"""
     expect(html).toBe(expected)
     
     
