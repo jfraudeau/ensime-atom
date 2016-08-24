@@ -139,15 +139,15 @@ module.exports = Ensime =
 
 
   apiOfEditor: (editor) ->
+    @instanceOfEditor(editor)?.api
+
+  instanceOfEditor: (editor) ->
     if(editor)
-      instance = @instanceManager?.instanceOfFile(editor.getPath())
-      if instance
-        instance.api
-      else
-        undefined
+      @instanceManager?.instanceOfFile(editor.getPath())
     else
       undefined
-
+      
+      
   apiOfOfActiveTextEditor: ->
     activeTextEditor = atom.workspace.getActiveTextEditor()
     if activeTextEditor
@@ -308,11 +308,11 @@ module.exports = Ensime =
 
   goToDocOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
-    documentation().goToDocAtPoint(@apiOfEditor(editor), editor)
+    documentation().goToDocAtPoint(@instanceOfEditor(editor), editor)
 
   goToDocIndex: ->
     editor = atom.workspace.getActiveTextEditor()
-    documentation().goToDocIndex(@apiOfEditor(editor))
+    documentation().goToDocIndex(@instanceOfEditor(editor))
 
   goToDefinitionOfCursor: ->
     editor = atom.workspace.getActiveTextEditor()
@@ -364,12 +364,12 @@ module.exports = Ensime =
       providerName: 'ensime-atom'
       getSuggestionForWord: (textEditor, text, range) =>
         if utils().isScalaSource(textEditor)
-          client = @apiOfEditor(textEditor)
+          api = @apiOfEditor(textEditor)
           {
             range: range
             callback: () ->
-              if(client)
-                GoTo().goToTypeAtPoint(client, textEditor.getBuffer(), range.start)
+              if(api)
+                GoTo().goToTypeAtPoint(api, textEditor.getBuffer(), range.start)
               else
                 atom.notifications.addError("Ensime not started! :(", {
                   detail: "There is no running ensime instance for this particular file. Please start ensime first!"
