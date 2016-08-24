@@ -2,7 +2,7 @@ module.exports =
   ensimeServerVersion:
     description: 'Version of Ensime server'
     type: 'string'
-    default: "0.9.10-SNAPSHOT"
+    default: "1.0.0"
     order: 10
   sbtExec:
     description: "Full path to sbt. 'which sbt'"
