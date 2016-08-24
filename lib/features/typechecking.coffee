@@ -3,8 +3,6 @@ _ = require 'lodash'
 {isScalaSource} = require '../utils'
 log = require('loglevel').getLogger('ensime.typechecking')
 
-
-
 module.exports = (indieLinter) ->
   lints = []
   timeout = undefined
@@ -33,8 +31,7 @@ module.exports = (indieLinter) ->
       log.trace(['lints: ', lints])
       
       doit = ->
-        # https://github.com/atom-community/linter/issues/1075
-        indieLinter.setMessages(JSON.parse(JSON.stringify(lints)))
+        indieLinter.setMessages(lints)
         
       if timeout
         clearTimeout(timeout)

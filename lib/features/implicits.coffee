@@ -1,13 +1,10 @@
 ImplicitInfo = require '../model/implicit-info'
 SubAtom = require 'sub-atom'
 
-
 class Implicits
   constructor: (@editor, @instanceLookup) ->
     @disposables = new SubAtom
-
     @disposables.add atom.config.observe 'Ensime.markImplicitsAutomatically', (setting) => @handleSetting(setting)
-
 
   handleSetting: (markImplicitsAutomatically) ->
     if(markImplicitsAutomatically)
@@ -28,17 +25,9 @@ class Implicits
       range = b.getRange()
       startO = b.characterIndexForPosition(range.start)
       endO = b.characterIndexForPosition(range.end)
-
-      msg =
-        "typehint":"ImplicitInfoReq"
-        "file": b.getPath()
-        "range":
-          "from": startO
-          "to": endO
-
+      
       @clearMarkers()
-      instance.client.post(msg, (result) =>
-
+      instance.api.getImplicitInfo(b.getPath(), startO, endO).then (result) =>
         createMarker = (info) =>
           range = [b.positionForCharacterIndex(parseInt(info.start)), b.positionForCharacterIndex(parseInt(info.end))]
           spot = [range[0], range[0]]
@@ -61,28 +50,27 @@ class Implicits
           )
 
         markers = (createMarker info for info in result.infos)
-      )
-    
+
     # If source path is under sourceRoots and modified, typecheck it first
     if(instance)
       if(instance.isSourceOf(@editor.getPath()) and @editor.isModified())
-        instance.client.typecheckBuffer(b.getPath(), b.getText(), (typecheckResult) -> continuation())
+        instance.api.typecheckBuffer(b.getPath(), b.getText()).then (typecheckResult) ->
+          continuation()
       else
         continuation()
         
   showImplicitsAtCursor: ->
     pos = @editor.getCursorBufferPosition()
     markers = @findMarkers({type: 'implicit', containsPoint: pos})
-    infos = markers.map (marker) -> marker.properties.info
+    infos = markers.map (marker) -> marker.bufferMarker.properties.info
     implicitInfo = new ImplicitInfo(infos, @editor, pos)
-
 
   clearMarkers: ->
     marker.destroy() for marker in @findMarkers()
     @overlayMarker?.destroy()
 
   findMarkers: (attributes = {type: 'implicit'}) ->
-    @editor.getBuffer().findMarkers(attributes)
+    @editor.findMarkers(attributes)
 
   deactivate: ->
     @disposables.dispose()

@@ -13,31 +13,30 @@ getSymbolDesignations = (client, editor) ->
   }
 
 
-  new Promise (resolve, reject) ->
-    client.post(msg, (result) ->
-      syms = result.syms
+  client.post(msg).then result ->
+    syms = result.syms
 
-      markers = (sym) ->
-        startPos = b.positionForCharacterIndex(parseInt(sym[1]))
-        endPos = b.positionForCharacterIndex(parseInt(sym[2]))
-        marker = editor.markBufferRange([startPos, endPos],
-                invalidate: 'inside',
-                class: "scala #{sym[0]}"
-                )
-        decoration = editor.decorateMarker(marker,
-          type: 'highlight',
-          class: sym[0]
-        )
-        marker
+    markers = (sym) ->
+      startPos = b.positionForCharacterIndex(parseInt(sym[1]))
+      endPos = b.positionForCharacterIndex(parseInt(sym[2]))
+      marker = editor.markBufferRange([startPos, endPos],
+              invalidate: 'inside',
+              class: "scala #{sym[0]}"
+              )
+      decoration = editor.decorateMarker(marker,
+        type: 'highlight',
+        class: sym[0]
+      )
+      marker
 
-      makeCodeLink = (marker) ->
-        range: marker.getBufferRange()
+    makeCodeLink = (marker) ->
+      range: marker.getBufferRange()
 
-      makers = (markers sym for sym in syms)
-      codeLinks = (makeCodeLink marker for maker in makers)
+    makers = (markers sym for sym in syms)
+    codeLinks = (makeCodeLink marker for maker in makers)
 
-      resolve(codeLinks)
-    )
+    codeLinks
+    
 
 symbols = [
   "ObjectSymbol"

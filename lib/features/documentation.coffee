@@ -43,24 +43,18 @@ class Documentation
 
 
 
-goToDocAtPoint = (client, editor) ->
-  if(client)
+goToDocAtPoint = (instance, editor) ->
+  if(instance)
     point = new Documentation(editor).getPoint()
 
-    req =
-      typehint: "DocUriAtPointReq"
-      file: editor.getBuffer().getPath()
-      point: point
-
-    client.post(req, (msg) ->
+    instance.api.getDocUriAtPoint(editor.getBuffer().getPath(), point).then (msg) ->
       switch msg.typehint
         when "FalseResponse" then atom.notifications.addError("No documentation found")
-        else Documentation.openDoc(Documentation.formUrl("localhost", client.httpPort, msg.text))
-  )
+        else Documentation.openDoc(Documentation.formUrl("localhost", instance.httpPort, msg.text))
+  
 
-goToDocIndex = (client) ->
-  log.trace("goToDocIndex #{client}")
-  Documentation.openDoc("http://localhost:#{client.httpPort}/docs")
+goToDocIndex = (instance) ->
+  Documentation.openDoc("http://localhost:#{instance.httpPort}/docs")
 
 
 module.exports = {

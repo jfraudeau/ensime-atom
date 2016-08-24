@@ -14,7 +14,7 @@ module.exports = (clientLookup) ->
       {formatCompletionsSignature} = (require '../atom-formatting')
       file = textBuffer.getPath()
       offset = textBuffer.characterIndexForPosition(bufferPosition)
-      clientLookup(textBuffer)?.getCompletions(file, textBuffer.getText(), offset, noOfAutocompleteSuggestions, (result) ->
+      clientLookup(textBuffer)?.getCompletions(file, textBuffer.getText(), offset, noOfAutocompleteSuggestions).then (result) ->
         completions = result.completions
         
         if(completions)
@@ -34,8 +34,7 @@ module.exports = (clientLookup) ->
               
           autocompletions = (translate c for c in completions)
           callback(autocompletions)
-      )
+      
     onDidInsertSuggestion: ({editor, suggestion, triggerPosition}) ->
-      client = clientLookup(editor)
       log.trace(['inserted suggestion', suggestion])
   }

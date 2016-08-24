@@ -1,13 +1,11 @@
 goToTypeAtPoint = (client, textBuffer, bufferPosition) ->
   offset = textBuffer.characterIndexForPosition(bufferPosition)
 
-  client.getSymbolAtPoint(textBuffer.getPath(), offset, (msg) ->
+  client.getSymbolAtPoint(textBuffer.getPath(), offset).then((msg) ->
     pos = msg.declPos
-    # Sometimes no pos
-    if(pos)
-      goToPosition(pos)
-    else
-      atom.notifications.addError("No declPos in response from Ensime server, cannot go anywhere :(")
+    goToPosition(pos)
+  ).catch((err) ->
+    atom.notifications.addError("No declPos in response from Ensime server, cannot go anywhere :(")
   )
 
 goToPosition = (pos) ->
