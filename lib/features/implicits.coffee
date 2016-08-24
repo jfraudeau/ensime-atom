@@ -62,7 +62,7 @@ class Implicits
   showImplicitsAtCursor: ->
     pos = @editor.getCursorBufferPosition()
     markers = @findMarkers({type: 'implicit', containsPoint: pos})
-    infos = markers.map (marker) -> marker.properties.info
+    infos = markers.map (marker) -> marker.bufferMarker.properties.info
     implicitInfo = new ImplicitInfo(infos, @editor, pos)
 
   clearMarkers: ->
@@ -70,7 +70,7 @@ class Implicits
     @overlayMarker?.destroy()
 
   findMarkers: (attributes = {type: 'implicit'}) ->
-    @editor.getBuffer().findMarkers(attributes)
+    @editor.findMarkers(attributes)
 
   deactivate: ->
     @disposables.dispose()
