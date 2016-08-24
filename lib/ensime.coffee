@@ -7,12 +7,12 @@ c = (resolve) ->
   ->
     x ?= resolve()
     x
-  
+
 lodash = c -> require 'lodash'
 ensimeClient = c -> require 'ensime-client'
 ensimeStartup = c -> require './ensime-startup'
 utils = c -> require './utils'
-  
+
 AutocompletePlusProvider = require './features/autocomplete-plus'
 Refactorings = require './features/refactorings'
 ShowTypes = require './features/show-types'
@@ -31,7 +31,7 @@ scalaSourceSelector = """atom-text-editor[data-grammar="source scala"]"""
 module.exports = Ensime =
 
   config: require './config'
-    
+
   addCommandsForStoppedState: ->
     @stoppedCommands = new CompositeDisposable
     @stoppedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
@@ -42,7 +42,7 @@ module.exports = Ensime =
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:stop", => @selectAndStopAnEnsime()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:update-server", => @selectAndUpdateAnEnsime()
-    
+
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:mark-implicits", => @markImplicits()
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:unmark-implicits", => @unmarkImplicits()
@@ -66,11 +66,9 @@ module.exports = Ensime =
 
   activate: (state) ->
     @subscriptions = new CompositeDisposable
-
-    @subscriptions.add atom.config.observe 'Ensime.typecheckWhen', (value) ->
     
     logLevel = atom.config.get('Ensime.logLevel')
-    
+
     logapi = require('loglevel')
 
     logapi.getLogger('ensime-client').setLevel(logLevel)
@@ -95,7 +93,7 @@ module.exports = Ensime =
 
     @addCommandsForStoppedState()
     @someInstanceStarted = false
-    
+
     @controlSubscription = atom.workspace.observeTextEditors (editor) =>
       if utils().isScalaSource(editor)
         instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
@@ -109,7 +107,6 @@ module.exports = Ensime =
 
     clientLookup = (editor) => @apiOfEditor(editor)
     @autocompletePlusProvider = new AutocompletePlusProvider(clientLookup)
-  
     @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
@@ -347,7 +344,8 @@ module.exports = Ensime =
 
       getSuggestions: ({editor, bufferPosition, scopeDescriptor, prefix}) ->
         provider = getProvider()
-        if(provider)
+        
+        if (provider && !"[](){}_".includes(prefix))
           new Promise (resolve) ->
             log.trace('ensime.getSuggestions')
             provider.getCompletions(editor.getBuffer(), bufferPosition, resolve)
