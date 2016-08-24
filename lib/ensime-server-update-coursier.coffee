@@ -21,4 +21,4 @@ tempdir = path.join(packageDir(), "ensime_update_coursier")
 
 # updateServer(tempdir: string, getPidLogger: () => (string) => void, failure: (string, int) => void)
 
-module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, failure, getPidLogger())
+module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, failure, getPidLogger)
