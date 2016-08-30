@@ -67,11 +67,10 @@ startEnsimeServer = (parsedDotEnsime) ->
   assemblyJar = mkAssemblyJarFileName(parsedDotEnsime.scalaEdition, ensimeServerVersion)
   
   if(fs.existsSync(assemblyJar))
-    Promise.resolve(startServerFromAssemblyJar(assemblyJar, parsedDotEnsime, ensimeServerFlags))
+    Promise.resolve(startServerFromAssemblyJar(assemblyJar, parsedDotEnsime, ensimeServerVersion, ensimeServerFlags))
   else
     cpF = mkClasspathFileName(parsedDotEnsime.scalaVersion, ensimeServerVersion)
-    # startServerFromFile(classpathFile: string, dotEnsime: DotEnsime, ensimeServerFlags = ""): Promise<ChildProcess>
-    startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerFlags)
+    startFromCPFile = -> startServerFromFile(cpF, parsedDotEnsime, ensimeServerVersion, ensimeServerFlags)
     if(not classpathFileOk(cpF))
       atom.notifications.addInfo("Updating server classpath")
       updateEnsimeServerWithCoursier(parsedDotEnsime, ensimeServerVersion, cpF).then(startFromCPFile)
