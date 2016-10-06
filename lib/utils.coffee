@@ -11,8 +11,11 @@ getTempDir = -> tempDir
 isScalaSource = (editor) ->
   buffer = editor.getBuffer()
   fname = buffer.getUri()
-  return path.extname(fname) in ['.scala']
-
+  if(fname)
+    path.extname(fname) in ['.scala']
+  else
+    false
+    
 # pixel position from mouse event
 pixelPositionFromMouseEvent = (editor, event) ->
   {clientX, clientY} = event
