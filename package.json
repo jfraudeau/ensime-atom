@@ -19,7 +19,7 @@
     "diff": "^2.2.1",
     "dom-listener": "^0.1.2",
     "emissary": "1.x",
-    "ensime-client": "0.6.0",
+    "ensime-client": "0.8.0",
     "fs-extra": "^0.26.5",
     "glob": "~6.0.4",
     "jquery": "^2",
