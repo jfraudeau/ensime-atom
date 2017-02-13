@@ -2,7 +2,7 @@
 @import "octicon-utf-codes";
 
 
-@implicit-class: .implicit;
+@implicit-class: ~".syntax--implicit";
 @implicit-gutter-icon:  @info;
 @implicit-gutter-background:  inherit;
 @implicit-gutter-color: @text-color-info;
@@ -32,8 +32,8 @@
   }
 }
 
-atom-text-editor, atom-text-editor::shadow {
-  .inline-marker(@implicit-class,@implicit-underline-color, @implicit-gutter-background,@implicit-gutter-icon, @implicit-gutter-color);
+atom-text-editor {
+  .inline-marker(@implicit-class, @implicit-underline-color, @implicit-gutter-background, @implicit-gutter-icon, @implicit-gutter-color);
 }
 
 implicit-info.select-list.popover-list {
