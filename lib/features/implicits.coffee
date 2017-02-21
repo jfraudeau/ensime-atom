@@ -18,14 +18,14 @@ class Implicits
 
   showImplicits: ->
     b = @editor.getBuffer()
-    
+
     instance = @instanceLookup()
-        
+
     continuation = =>
       range = b.getRange()
       startO = b.characterIndexForPosition(range.start)
       endO = b.characterIndexForPosition(range.end)
-      
+
       @clearMarkers()
       instance.api.getImplicitInfo(b.getPath(), startO, endO).then (result) =>
         createMarker = (info) =>
@@ -42,11 +42,11 @@ class Implicits
           )
           @editor.decorateMarker(markerRange,
               type: 'highlight'
-              class: 'implicit'
+              class: 'syntax--implicit'
           )
           @editor.decorateMarker(markerSpot,
               type: 'line-number'
-              class: 'implicit'
+              class: 'syntax--implicit'
           )
 
         markers = (createMarker info for info in result.infos)
@@ -58,7 +58,7 @@ class Implicits
           continuation()
       else
         continuation()
-        
+
   showImplicitsAtCursor: ->
     pos = @editor.getCursorBufferPosition()
     markers = @findMarkers({type: 'implicit', containsPoint: pos})
