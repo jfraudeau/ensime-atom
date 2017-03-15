@@ -200,9 +200,9 @@ module.exports = Ensime =
     dotEnsimeUtils().parseDotEnsime(dotEnsimePath).then (dotEnsime) =>
 
       typechecking = undefined
-      if(@indieLinterRegistry)
+      if(@registerIndie)
         TypeCheckingFeature = require './features/typechecking'
-        typechecking = TypeCheckingFeature(@indieLinterRegistry.register("Ensime: #{dotEnsimePath}"))
+        typechecking = TypeCheckingFeature(@registerIndie({name: "Ensime: #{dotEnsimePath}"}))
 
       StatusbarView = require './views/statusbar-view'
       statusbarView = new StatusbarView()
@@ -380,9 +380,7 @@ module.exports = Ensime =
 
     }
 
-  # Just add registry to delegate registration on instances
-  consumeLinter: (@indieLinterRegistry) ->
-
+  consumeIndie: (@registerIndie) ->
 
   provideIntentions: ->
     getIntentions = (req) =>

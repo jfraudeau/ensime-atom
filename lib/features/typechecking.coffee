@@ -9,15 +9,16 @@ module.exports = (indieLinter) ->
 
   # API
   noteToLint = (note) ->
-    type: switch note.severity.typehint
-      when "NoteError" then "Error"
-      when "NoteWarn" then "Warning"
+    severity: switch note.severity.typehint
+      when "NoteError" then "error"
+      when "NoteWarn" then "warning"
       else ""
-    text: note.msg
-    # TODO: This is only true if error doesn't span two lines. Since we don't have buffer here it might be
-    # good enough? Or not?
-    range: [[note.line - 1, note.col - 1], [note.line - 1, note.col - 1 + (note.end - note.beg)]]
-    filePath: note.file
+    location: 
+      file: note.file
+      # TODO: This is only true if error doesn't span two lines. Since we don't have buffer here it might be
+      # good enough? Or not?
+      position: [[note.line - 1, note.col - 1], [note.line - 1, note.col - 1 + (note.end - note.beg)]]      
+    excerpt: note.msg
         
   addLints = (notes) ->
     for note in notes
@@ -31,7 +32,7 @@ module.exports = (indieLinter) ->
       log.trace(['lints: ', lints])
       
       doit = ->
-        indieLinter.setMessages(lints)
+        indieLinter.setAllMessages(lints)
         
       if timeout
         clearTimeout(timeout)
@@ -39,7 +40,7 @@ module.exports = (indieLinter) ->
       
     clearScalaNotes: ->
       lints = []
-      indieLinter.deleteMessages()
+      indieLinter.clearMessages()
         
     destroy: ->
       indieLinter.dispose()
