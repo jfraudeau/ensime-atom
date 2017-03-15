@@ -5,6 +5,7 @@ class Implicits
   constructor: (@editor, @instanceLookup) ->
     @disposables = new SubAtom
     @disposables.add atom.config.observe 'Ensime.markImplicitsAutomatically', (setting) => @handleSetting(setting)
+    @infos = new WeakMap
 
   handleSetting: (markImplicitsAutomatically) ->
     if(markImplicitsAutomatically)
@@ -36,10 +37,14 @@ class Implicits
               type: 'implicit'
               info: info
           )
+          @infos.set(markerRange, info)
+          
           markerSpot = @editor.markBufferRange(spot,
               type: 'implicit'
               info: info
           )
+          @infos.set(markerRange, info)
+          
           @editor.decorateMarker(markerRange,
               type: 'highlight'
               class: 'syntax--implicit'
@@ -62,7 +67,7 @@ class Implicits
   showImplicitsAtCursor: ->
     pos = @editor.getCursorBufferPosition()
     markers = @findMarkers({type: 'implicit', containsPoint: pos})
-    infos = markers.map (marker) -> marker.bufferMarker.properties.info
+    infos = markers.map (marker) => @infos.get(marker)
     implicitInfo = new ImplicitInfo(infos, @editor, pos)
 
   clearMarkers: ->
