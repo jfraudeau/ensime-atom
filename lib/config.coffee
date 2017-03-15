@@ -62,4 +62,30 @@ module.exports =
     type: 'boolean'
     default: true
     order: 130
-  
+  proxySettings:
+    type: 'object'
+    order: 140
+    title: "Proxy settings"
+    properties:
+      host:
+        title: "Host"
+        description: "Proxy host. Turns off proxy use if empty"
+        type: 'string'
+        default: ''
+        order: 10
+      port:
+        description: "Proxy port"
+        title: "Port"
+        type: 'integer'
+        default: 8080
+        order: 20
+      user:
+       description: "Proxy user. Turns off authentication if empty"
+       type: 'string'
+       default: ''
+       order: 30
+      password:
+       description: "Proxy password"
+       type: 'string'
+       default: ''
+       order: 40
