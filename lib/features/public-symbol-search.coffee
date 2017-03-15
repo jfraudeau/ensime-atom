@@ -23,7 +23,7 @@ module.exports = ->
     modalPanel.hide()
   
   vue.onSearchTextUpdated (newText, oldText) ->
-    api.searchPublicSymbols(newText.split(' '), maxSymbols).then (msg) ->
+    api?.searchPublicSymbols(newText.split(' '), maxSymbols).then (msg) ->
       vue.results = msg.syms
       vue.selected = 0
     
