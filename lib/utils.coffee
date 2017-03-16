@@ -15,7 +15,7 @@ isScalaSource = (editor) ->
     path.extname(fname) in ['.scala']
   else
     false
-    
+
 # pixel position from mouse event
 pixelPositionFromMouseEvent = (editor, event) ->
   {clientX, clientY} = event
@@ -78,6 +78,18 @@ mkAssemblyJarFileName = (scalaEdition, ensimeServerVersion) ->
 packageDir = ->
   atom.packages.getActivePackage('Ensime')?.path || atom.packages.resolvePackagePath('Ensime')
 
+proxySettings = ->
+  atomProxySettings = atom.config.get('Ensime.proxySettings')
+  if (!!atomProxySettings.host)
+    settings =
+      host: atomProxySettings.host
+      port: atomProxySettings.port
+    if (!!atomProxySettings.user)
+      settings.user = atomProxySettings.user
+    if (!!atomProxySettings.password)
+      settings.password = atomProxySettings.password
+    settings
+
 module.exports = {
   isScalaSource,
   pixelPositionFromMouseEvent,
@@ -92,4 +104,5 @@ module.exports = {
   mkClasspathFileName,
   mkAssemblyJarFileName
   getTempDir
+  proxySettings
 }

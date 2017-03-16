@@ -1,6 +1,6 @@
 path = require 'path'
 log = require('loglevel').getLogger('ensime.server-update')
-{packageDir} = require './utils'
+{packageDir,proxySettings} = require './utils'
 EnsimeServerUpdateLogView = require './views/ensime-server-update-log-view'
 
 getPidLogger = ->
@@ -16,9 +16,9 @@ failure = (msg, code) ->
     dismissable: true
     detail: "Exit code: #{code}"
   })
-  
+
 tempdir = path.join(packageDir(), "ensime_update_coursier")
 
 # updateServer(tempdir: string, getPidLogger: () => (string) => void, failure: (string, int) => void)
 
-module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, failure, getPidLogger)
+module.exports = (require 'ensime-client').ensimeServerUpdate(tempdir, failure, getPidLogger, proxySettings())
