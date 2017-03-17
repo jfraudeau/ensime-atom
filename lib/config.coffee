@@ -51,6 +51,11 @@ module.exports =
     type: 'integer'
     default: 10
     order: 110
+  maxSymbolsInSearch:
+    description: "Number of suggestions on symbol search"
+    type: 'integer'
+    default: 10
+    order: 115
   documentationSplit:
     description: "Where to open ScalaDoc"
     type: 'string'

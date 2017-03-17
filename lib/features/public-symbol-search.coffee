@@ -1,14 +1,18 @@
 SymbolSearchVue = require('../views/public-symbol-search-vue')
 {addModalPanel} = require('../utils')
 {goToPosition} = require './go-to'
-
-maxSymbols = 5
+SubAtom = require 'sub-atom'
 
 
 module.exports = ->
   vue = new SymbolSearchVue
   modalPanel = addModalPanel(vue, false)
-
+  disposables = new SubAtom
+  maxSymbols = undefined
+  
+  disposables.add atom.config.observe 'Ensime.maxSymbolsInSearch', (value) ->
+    maxSymbols = value
+    
   api = undefined
   
   toggle = (newApi) ->
@@ -27,7 +31,6 @@ module.exports = ->
       vue.results = msg.syms
       vue.selected = 0
     
-
   atom.commands.add vue.$el,
     'core:move-up': (event) ->
       if(vue.selected > 0)
@@ -62,4 +65,5 @@ module.exports = ->
   {
     toggle: toggle
     cancel: cancel
+    dispose: -> disposable.dispose()
   }

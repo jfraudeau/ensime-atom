@@ -140,6 +140,8 @@ module.exports = Ensime =
 
     @autocompletePlusProvider?.dispose()
     @autocompletePlusProvider = null
+    
+    @publicSymbolSearch?.dispose()
 
 
   apiOfEditor: (editor) ->
