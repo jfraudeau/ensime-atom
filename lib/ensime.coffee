@@ -28,6 +28,7 @@ log = undefined
 
 
 scalaSourceSelector = """atom-text-editor[data-grammar="source scala"]"""
+javaSourceSelector = """atom-text-editor[data-grammar="source java"]"""
 module.exports = Ensime =
 
   config: require './config'
@@ -52,9 +53,14 @@ module.exports = Ensime =
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:typecheck-file", => @typecheckFile()
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:typecheck-buffer", => @typecheckBuffer()
 
+    @startedCommands.add atom.commands.add javaSourceSelector, "ensime:typecheck-file", => @typecheckFile()
+    @startedCommands.add atom.commands.add javaSourceSelector, "ensime:typecheck-buffer", => @typecheckBuffer()
+
+
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:go-to-definition", => @goToDefinitionOfCursor()
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:go-to-doc", => @goToDocOfCursor()
+    @startedCommands.add atom.commands.add javaSourceSelector, "ensime:go-to-doc", => @goToDocOfCursor()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:browse-doc", => @goToDocIndex()
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:format-source", => @formatCurrentSourceFile()
@@ -95,7 +101,7 @@ module.exports = Ensime =
     @someInstanceStarted = false
 
     @controlSubscription = atom.workspace.observeTextEditors (editor) =>
-      if utils().isScalaSource(editor)
+      if utils().isScalaSource(editor) or utils().isJavaSource(editor)
         instanceLookup = => @instanceManager?.instanceOfFile(editor.getPath())
         clientLookup = -> instanceLookup()?.api
         if not @showTypesControllers.get(editor) then @showTypesControllers.set(editor, new ShowTypes(editor, clientLookup))
@@ -110,11 +116,12 @@ module.exports = Ensime =
     @refactorings = new Refactorings
 
     atom.workspace.onDidStopChangingActivePaneItem (pane) =>
-      if(atom.workspace.isTextEditor(pane) and utils().isScalaSource(pane))
-        log.trace('this: ' + this)
-        log.trace(['@instanceManager: ', @instanceManager])
-        instance = @instanceManager?.instanceOfFile(pane.getPath())
-        @switchToInstance(instance)
+      if atom.workspace.isTextEditor(pane)
+        if utils().isScalaSource(pane) or utils().isJavaSource(pane)
+          log.trace('this: ' + this)
+          log.trace(['@instanceManager: ', @instanceManager])
+          instance = @instanceManager?.instanceOfFile(pane.getPath())
+          @switchToInstance(instance)
 
   switchToInstance: (instance) ->
     log.trace(['changed from ', @activeInstance, ' to ', instance])
@@ -168,10 +175,10 @@ module.exports = Ensime =
     else if(typehint == 'CompilerRestartedEvent')
       statusbarView.setText('Compiler restarted!')
 
-    else if(typehint == 'ClearAllScalaNotesEvent')
+    else if(typehint == 'ClearAllScalaNotesEvent' || typehint == 'ClearAllJavaNotesEvent')
       typechecking?.clearScalaNotes()
 
-    else if(typehint == 'NewScalaNotesEvent')
+    else if(typehint == 'NewScalaNotesEvent' || typehint == 'NewJavaNotesEvent')
       typechecking?.addScalaNotes(msg)
 
     else if(typehint.startsWith('SendBackgroundMessageEvent'))
@@ -339,7 +346,7 @@ module.exports = Ensime =
       @autocompletePlusProvider
 
     {
-      selector: '.source.scala'
+      selector: '.source.scala, .source.java'
       disableForSelector: '.source.scala .comment'
       inclusionPriority: 10
       excludeLowerPriority: true
@@ -363,7 +370,7 @@ module.exports = Ensime =
     {
       providerName: 'ensime-atom'
       getSuggestionForWord: (textEditor, text, range) =>
-        if utils().isScalaSource(textEditor)
+        if utils().isScalaSource(textEditor) or utils().isJavaSource(textEditor)
           api = @apiOfEditor(textEditor)
           {
             range: range
