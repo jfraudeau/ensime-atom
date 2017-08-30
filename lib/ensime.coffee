@@ -216,10 +216,10 @@ module.exports = Ensime =
       statusbarView.init()
 
       ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
-      
-      ensimeStartup().startClient(dotEnsime, ensimeServerVersion, @statusbarOutput(statusbarView, typechecking)).then (client) =>
+
+      ensimeStartup().startClient(dotEnsime, ensimeServerVersion, @statusbarOutput(statusbarView, typechecking)).then (connection) =>
         atom.notifications.addSuccess("Ensime connected!")
-        
+
         # atom specific ui state of an instance
         ui = {
           statusbarView
@@ -229,18 +229,18 @@ module.exports = Ensime =
             statusbarView.destroy()
             typechecking?.destroy()
         }
-        
-        instance = ensimeClient().makeInstanceOf(dotEnsime, client, ui)
+
+        instance = ensimeClient().makeInstanceFromRef(dotEnsime, connection, ui)
 
         @instanceManager ?= new (ensimeClient().InstanceManager)
         @instanceManager.registerInstance(instance)
         if (not @activeInstance)
           @activeInstance = instance
 
-        client.post({"typehint":"ConnectionInfoReq"}, (msg) -> )
+        connection.post({"typehint":"ConnectionInfoReq"}, (msg) -> )
 
         @switchToInstance(instance)
-      
+
 
 
 
