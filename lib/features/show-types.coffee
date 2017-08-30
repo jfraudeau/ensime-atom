@@ -1,4 +1,4 @@
-{bufferPositionFromMouseEvent, pixelPositionFromMouseEvent, getElementsByClass} = require '../utils'
+{bufferPositionFromMouseEvent, pixelPositionFromMouseEvent} = require '../utils'
 SubAtom = require('sub-atom')
 {goToPosition} = require './go-to'
 log = require('loglevel').getLogger('ensime.show-types')
@@ -10,7 +10,7 @@ class ShowTypes
     @locked = false
 
     @editorView = atom.views.getView(@editor)
-    @editorElement = @editorView.rootElement
+    @editorElement = @editorView
 
     atom.config.observe 'Ensime.enableTypeTooltip', (enabled) =>
       if(enabled)
