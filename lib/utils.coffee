@@ -29,7 +29,7 @@ isJavaSource = (editor) ->
 pixelPositionFromMouseEvent = (editor, event) ->
   {clientX, clientY} = event
   elem = atom.views.getView(editor)
-  linesClientRect = getElementsByClass(elem, ".lines")[0].getBoundingClientRect()
+  linesClientRect = elem.querySelectorAll(".lines")[0].getBoundingClientRect()
   top = clientY - linesClientRect.top
   left = clientX - linesClientRect.left
   {top, left}
@@ -43,9 +43,6 @@ screenPositionFromMouseEvent = (editor, event) ->
 # from haskell-ide
 bufferPositionFromMouseEvent = (editor, event) ->
   editor.bufferPositionForScreenPosition (screenPositionFromMouseEvent(editor, event))
-
-getElementsByClass = (elem,klass) ->
-  elem.rootElement.querySelectorAll(klass)
 
 modalMsg = (title, msg) ->
   atom.confirm
@@ -105,7 +102,6 @@ module.exports = {
   pixelPositionFromMouseEvent,
   screenPositionFromMouseEvent,
   bufferPositionFromMouseEvent,
-  getElementsByClass,
   log: log.trace,
   modalMsg,
   withSbt,
