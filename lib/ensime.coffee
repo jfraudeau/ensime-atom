@@ -290,11 +290,6 @@ module.exports = Ensime =
         @switchToInstance(undefined)
 
     @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager?.isStarted(dotEnsime.path))
-  
-  selectAndStopAnEnsimeServer: ->
-    @selectDotEnsime (selectedDotEnsime) ->
-      dotEnsimeUtils().parseDotEnsime(selectedDotEnsime.path).then (dotEnsime) ->
-        # TODO: Stop ensime instance
 
   typecheckAll: ->
     @apiOfOfActiveTextEditor()?.typecheckAll()
