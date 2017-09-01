@@ -78,9 +78,6 @@ withSbt = (callback) ->
 mkClasspathFileName = (scalaVersion, ensimeServerVersion) ->
   path.join(packageDir(), "classpath_#{scalaVersion}_#{ensimeServerVersion}")
 
-mkAssemblyJarFileName = (scalaEdition, ensimeServerVersion) ->
-  path.join(packageDir(), "ensime_#{scalaEdition}-#{ensimeServerVersion}-assembly.jar")
-
 packageDir = ->
   atom.packages.getActivePackage('Ensime')?.path || atom.packages.resolvePackagePath('Ensime')
 
@@ -108,7 +105,6 @@ module.exports = {
   addModalPanel,
   packageDir,
   mkClasspathFileName,
-  mkAssemblyJarFileName
   getTempDir
   proxySettings
 }

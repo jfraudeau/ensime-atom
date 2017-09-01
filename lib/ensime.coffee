@@ -36,13 +36,11 @@ module.exports = Ensime =
   addCommandsForStoppedState: ->
     @stoppedCommands = new CompositeDisposable
     @stoppedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
-    @stoppedCommands.add atom.commands.add 'atom-workspace', "ensime:update-server", => @selectAndUpdateAnEnsime()
 
   addCommandsForStartedState: ->
     @startedCommands = new CompositeDisposable
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:stop", => @selectAndStopAnEnsime()
     @startedCommands.add atom.commands.add 'atom-workspace', "ensime:start", => @selectAndBootAnEnsime()
-    @startedCommands.add atom.commands.add 'atom-workspace', "ensime:update-server", => @selectAndUpdateAnEnsime()
 
 
     @startedCommands.add atom.commands.add scalaSourceSelector, "ensime:mark-implicits", => @markImplicits()
@@ -140,6 +138,8 @@ module.exports = Ensime =
 
     @autocompletePlusProvider?.dispose()
     @autocompletePlusProvider = null
+    
+    @publicSymbolSearch?.dispose()
 
 
   apiOfEditor: (editor) ->
@@ -216,10 +216,10 @@ module.exports = Ensime =
       statusbarView.init()
 
       ensimeServerVersion = atom.config.get('Ensime.ensimeServerVersion')
-      
-      ensimeStartup().startClient(dotEnsime, ensimeServerVersion, @statusbarOutput(statusbarView, typechecking)).then (client) =>
+
+      ensimeStartup().startClient(dotEnsime, ensimeServerVersion, @statusbarOutput(statusbarView, typechecking)).then (connection) =>
         atom.notifications.addSuccess("Ensime connected!")
-        
+
         # atom specific ui state of an instance
         ui = {
           statusbarView
@@ -229,18 +229,18 @@ module.exports = Ensime =
             statusbarView.destroy()
             typechecking?.destroy()
         }
-        
-        instance = ensimeClient().makeInstanceOf(dotEnsime, client, ui)
+
+        instance = ensimeClient().makeInstanceFromRef(dotEnsime, connection, ui)
 
         @instanceManager ?= new (ensimeClient().InstanceManager)
         @instanceManager.registerInstance(instance)
         if (not @activeInstance)
           @activeInstance = instance
 
-        client.post({"typehint":"ConnectionInfoReq"}, (msg) -> )
+        connection.post({"typehint":"ConnectionInfoReq"}, (msg) -> )
 
         @switchToInstance(instance)
-      
+
 
 
 
@@ -290,12 +290,6 @@ module.exports = Ensime =
         @switchToInstance(undefined)
 
     @selectDotEnsime(stopDotEnsime, (dotEnsime) => @instanceManager?.isStarted(dotEnsime.path))
-  
-  selectAndUpdateAnEnsime: ->
-    @selectDotEnsime (selectedDotEnsime) ->
-      dotEnsimeUtils().parseDotEnsime(selectedDotEnsime.path).then (dotEnsime) ->
-        ensimeStartup().updateEnsimeServer(dotEnsime, -> atom.notifications.addSuccess("Updated!"))
-    
 
   typecheckAll: ->
     @apiOfOfActiveTextEditor()?.typecheckAll()
