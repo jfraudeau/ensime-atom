@@ -1,6 +1,8 @@
 .DS_Store
 npm-debug.log
 node_modules
+.ensime
+.ensime_cache/
 ensime_port
 ensime_update_
 ensime_update_coursier
@@ -9,3 +11,5 @@ classpath_*
 **/target
 .vscode
 *assembly.jar
+lib/ensimesjs.js
+lib/ensimesjs.js.map

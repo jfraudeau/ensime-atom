@@ -1,0 +1,12 @@
+
+# sbt and scala sources
+project/
+target/
+src/
+build.sbt
+
+
+
+# ensime
+.ensime_cache/
+.ensime

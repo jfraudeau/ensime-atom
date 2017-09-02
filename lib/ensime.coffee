@@ -13,11 +13,12 @@ ensimeClient = c -> require 'ensime-client'
 ensimeStartup = c -> require './ensime-startup'
 utils = c -> require './utils'
 
-AutocompletePlusProvider = require './features/autocomplete-plus'
+sjs = require('./ensimesjs')
+AutocompletePlusProvider = sjs.AutocompletePlusProvider
 Refactorings = require './features/refactorings'
-ShowTypes = require './features/show-types'
+ShowTypes = sjs.ShowTypes
 Implicits = require './features/implicits'
-AutoTypecheck = require './features/auto-typecheck'
+AutoTypecheck = sjs.AutoTypecheck
 
 GoTo = c -> require './features/go-to'
 documentation = c -> require './features/documentation'
