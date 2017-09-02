@@ -1,38 +1,44 @@
+/* eslint-disable
+    no-tabs,
+    no-undef,
+    no-unused-vars,
+*/
+// TODO: This file was created by bulk-decaffeinate.
+// Fix any style issues and re-enable lint.
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const root = '../..';
-const Promise = require('bluebird');
-const temp = require('temp');
-const JsDiff = require('diff');
-const log = require('loglevel');
+const root = '../..'
+const Promise = require('bluebird')
+const temp = require('temp')
+const JsDiff = require('diff')
+const log = require('loglevel')
 
-const refactorings = new (require(`${root}/lib/features/refactorings`));
+const refactorings = new (require(`${root}/lib/features/refactorings`))()
 
-const testDiffApplication = function(fileName, before, diff, expected) {
+const testDiffApplication = function (fileName, before, diff, expected) {
   waitsForPromise(() =>
     atom.workspace.open(fileName).then(editor => editor.setText(before))
-  );
+  )
 
-  waitsForPromise(() => refactorings.applyPatchFromFileContent(diff));
-    
+  waitsForPromise(() => refactorings.applyPatchFromFileContent(diff))
+
   return waitsForPromise(() =>
-    atom.workspace.open(fileName).then(function(editor) {
-      const result = editor.getText();
-      return expect(result).toEqual(expected);
+    atom.workspace.open(fileName).then(function (editor) {
+      const result = editor.getText()
+      return expect(result).toEqual(expected)
     })
-  );
-};
-  
-describe('applyPatchesInEditors', function() {
-  
-  beforeEach(() => temp.track());
-        
-  it('should not fail https://github.com/ensime/ensime-atom/issues/214', function() {
-    const fileName = temp.path({suffix: '.scala'});
-    
+  )
+}
+
+describe('applyPatchesInEditors', function () {
+  beforeEach(() => temp.track())
+
+  it('should not fail https://github.com/ensime/ensime-atom/issues/214', function () {
+    const fileName = temp.path({suffix: '.scala'})
+
     const fileContents = `\
 import scala.collection.immutable.HashMap
 import scala.concurrent.Future
@@ -45,8 +51,8 @@ val x = new HashMap()
 val y = Try(1)
 val f = Future.successful(2)
 }\
-`;
-                  
+`
+
     const diff = `\
 --- ${fileName}	2016-03-21 02:50:51 +0100
 +++ ${fileName}	2016-03-21 02:50:51 +0100
@@ -59,7 +65,7 @@ val f = Future.successful(2)
 -import scala.concurrent.ExecutionContext.Implicits.global
 -
  object foo {\
-`;
+`
 
     const expectedResult = `\
 import scala.collection.immutable.HashMap
@@ -72,16 +78,14 @@ val x = new HashMap()
 val y = Try(1)
 val f = Future.successful(2)
 }\
-`;
+`
 
-    return testDiffApplication(fileName, fileContents, diff, expectedResult);
-  });
-  
-  
-  
-  it("should not fail like https://github.com/ensime/ensime-atom/pull/217#issuecomment-199369339", function() {
-    const fileName = temp.path({suffix: '.scala'});
-    
+    return testDiffApplication(fileName, fileContents, diff, expectedResult)
+  })
+
+  it('should not fail like https://github.com/ensime/ensime-atom/pull/217#issuecomment-199369339', function () {
+    const fileName = temp.path({suffix: '.scala'})
+
     const fileContents = `\
 import scala.util.Try
 
@@ -89,8 +93,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object foo {
 }\
-`;
-                  
+`
+
     const diff = `\
 --- ${fileName}	2016-03-21 08:23:12 +0100
 +++ ${fileName}	2016-03-21 08:23:12 +0100
@@ -102,7 +106,7 @@ object foo {
 +
 +
  object foo {\
-`;
+`
     const expectedResult = `\
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -110,29 +114,28 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object foo {
 }\
-`;
-            
-    return testDiffApplication(fileName, fileContents, diff, expectedResult);
-  });
-  
-  
-  describe("empty diffs", function() {
-    beforeEach(function() {
-      spyOn(atom.workspace, 'open').andCallThrough();
-      
-      const fileName = temp.path({suffix: '.scala'});
-      const fileContents = "";
-      const diff = "";
-      const expectedResult = "";
-      
-      return testDiffApplication(fileName, fileContents, diff, expectedResult);
-    });
-    
-    return it("should not call open with undefined", function() {
-      log.trace('expecting!');
-      return expect(atom.workspace.open).not.toHaveBeenCalledWith(undefined);
-    });
-  });
-    
-  return afterEach(() => temp.cleanupSync());
-});
+`
+
+    return testDiffApplication(fileName, fileContents, diff, expectedResult)
+  })
+
+  describe('empty diffs', function () {
+    beforeEach(function () {
+      spyOn(atom.workspace, 'open').andCallThrough()
+
+      const fileName = temp.path({suffix: '.scala'})
+      const fileContents = ''
+      const diff = ''
+      const expectedResult = ''
+
+      return testDiffApplication(fileName, fileContents, diff, expectedResult)
+    })
+
+    return it('should not call open with undefined', function () {
+      log.trace('expecting!')
+      return expect(atom.workspace.open).not.toHaveBeenCalledWith(undefined)
+    })
+  })
+
+  return afterEach(() => temp.cleanupSync())
+})
