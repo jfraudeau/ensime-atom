@@ -1,22 +1,11 @@
-/* eslint-disable
-    no-tabs,
-    no-undef,
-    no-unused-vars,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-const root = '../..'
-const Promise = require('bluebird')
+'use babel'
+
 const temp = require('temp')
 const JsDiff = require('diff')
 const log = require('loglevel')
 
-const refactorings = new (require(`${root}/lib/features/refactorings`))()
+import Refactorings from '../../lib/features/refactorings'
+const refactorings = new Refactorings()
 
 const testDiffApplication = function (fileName, before, diff, expected) {
   waitsForPromise(() =>
@@ -61,7 +50,7 @@ val f = Future.successful(2)
 +import scala.concurrent.ExecutionContext.Implicits.global
  import scala.concurrent.Future
 @@ -4,4 +5,2 @@
- 
+
 -import scala.concurrent.ExecutionContext.Implicits.global
 -
  object foo {\
@@ -102,7 +91,7 @@ object foo {
 -import scala.util.Try
 -
  import scala.concurrent.ExecutionContext.Implicits.global
- 
+
 +
 +
  object foo {\

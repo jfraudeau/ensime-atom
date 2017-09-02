@@ -1,16 +1,3 @@
-/* eslint-disable
-    handle-callback-err,
-    no-path-concat,
-    no-undef,
-    no-unused-vars,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 const recread = require('recursive-readdir')
 const process = require('process')
 const path = require('path')

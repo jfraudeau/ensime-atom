@@ -1,22 +1,13 @@
-/* eslint-disable
-    no-return-assign,
-    no-template-curly-in-string,
-    no-undef,
-    no-unused-vars,
-*/
-// TODO: This file was created by bulk-decaffeinate.
-// Fix any style issues and re-enable lint.
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
-const root = '..'
-const {formatTypeAsHtml, formatTypeAsString, formatCompletionsSignature} = require(`${root}/lib/atom-formatting`)
+'use babel'
+
+import {
+  formatTypeAsHtml,
+  formatTypeAsString,
+  formatCompletionsSignature
+} from '../lib/atom-formatting'
 
 describe('rich atom specific type hover formatter', () =>
   it('should format |@| correctly', function () {
-    let type
     const typeStr = `\
 {
   "typehint": "ArrowTypeInfo",
@@ -64,7 +55,7 @@ describe('rich atom specific type hover formatter', () =>
   ]
 }\
 `
-    return type = JSON.parse(typeStr)
+    return JSON.parse(typeStr)
   })
 )
 
