@@ -1,6 +1,7 @@
 {
-    "extends": "standard",
-    "globals": {
-      "atom": true
-    }
+  "plugins": ["prettier"],
+  "extends": ["standard", "prettier"],
+  "globals": {
+    "atom": true
+  }
 }
