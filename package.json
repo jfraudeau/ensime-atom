@@ -9,6 +9,7 @@
     "atom": ">0.50.0"
   },
   "scripts": {
+    "lint": "eslint lib",
     "integration": "atom --dev --test spec; atom --dev --test spec-integration"
   },
   "dependencies": {
@@ -77,6 +78,7 @@
     }
   },
   "devDependencies": {
+    "eslint": "^4.6.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
