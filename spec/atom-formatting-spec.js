@@ -1,61 +1,69 @@
-root = '..'
-{formatTypeAsHtml, formatTypeAsString, formatCompletionsSignature} = require "#{root}/lib/atom-formatting"
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const root = '..';
+const {formatTypeAsHtml, formatTypeAsString, formatCompletionsSignature} = require(`${root}/lib/atom-formatting`);
 
-describe 'rich atom specific type hover formatter', ->
-  it "should format |@| correctly", ->
-    typeStr = """
-        {
-          "typehint": "ArrowTypeInfo",
-          "name": "[B](fb: F[B])scalaz.syntax.ApplicativeBuilder[F,A,B]",
-          "resultType": {
-            "name": "<refinement>",
-            "fullName": "scalaz.syntax.ApplyOps$<refinement>",
+describe('rich atom specific type hover formatter', () =>
+  it("should format |@| correctly", function() {
+    let type;
+    const typeStr = `\
+{
+  "typehint": "ArrowTypeInfo",
+  "name": "[B](fb: F[B])scalaz.syntax.ApplicativeBuilder[F,A,B]",
+  "resultType": {
+    "name": "<refinement>",
+    "fullName": "scalaz.syntax.ApplyOps$<refinement>",
+    "typehint": "BasicTypeInfo",
+    "typeArgs": [],
+    "members": [],
+    "declAs": {
+      "typehint": "Class"
+    }
+  },
+  "paramSections": [
+    {
+      "params": [
+        [
+          "fb",
+          {
+            "name": "F",
+            "fullName": "scalaz.syntax.F",
             "typehint": "BasicTypeInfo",
-            "typeArgs": [],
+            "typeArgs": [
+              {
+                "name": "B",
+                "fullName": "scalaz.syntax.B",
+                "typehint": "BasicTypeInfo",
+                "typeArgs": [],
+                "members": [],
+                "declAs": {
+                  "typehint": "Nil"
+                }
+              }
+            ],
             "members": [],
             "declAs": {
-              "typehint": "Class"
+              "typehint": "Nil"
             }
-          },
-          "paramSections": [
-            {
-              "params": [
-                [
-                  "fb",
-                  {
-                    "name": "F",
-                    "fullName": "scalaz.syntax.F",
-                    "typehint": "BasicTypeInfo",
-                    "typeArgs": [
-                      {
-                        "name": "B",
-                        "fullName": "scalaz.syntax.B",
-                        "typehint": "BasicTypeInfo",
-                        "typeArgs": [],
-                        "members": [],
-                        "declAs": {
-                          "typehint": "Nil"
-                        }
-                      }
-                    ],
-                    "members": [],
-                    "declAs": {
-                      "typehint": "Nil"
-                    }
-                  }
-                ]
-              ],
-              "isImplicit": false
-            }
-          ]
-        }
-    """
-    type = JSON.parse(typeStr)
+          }
+        ]
+      ],
+      "isImplicit": false
+    }
+  ]
+}\
+`;
+    return type = JSON.parse(typeStr);
+  })
+);
   
 
-describe 'type-hover', ->
+describe('type-hover', function() {
 
-  thing = {
+  const thing = {
     "name": "LanguageFeatureImport.Thing[LanguageFeatureImport.Thing.T]",
     "localName": "Thing",
     "typehint": "SymbolInfo",
@@ -91,36 +99,41 @@ describe 'type-hover', ->
       }
     },
     "isCallable": false
-  }
-  it 'should format type variables correctly in simple strings', ->
-    string = formatTypeAsString(thing.type)
-    expect(string).toBe("Thing[T]")
+  };
+  it('should format type variables correctly in simple strings', function() {
+    const string = formatTypeAsString(thing.type);
+    return expect(string).toBe("Thing[T]");
+  });
     
-  it 'should format type variables correctly in rich html', ->
-    html = formatTypeAsHtml(thing.type)
-    expected = """<a data-qualified-name="LanguageFeatureImport.Thing" title="LanguageFeatureImport.Thing">Thing</a>[<a data-qualified-name="LanguageFeatureImport.Thing.T" title="LanguageFeatureImport.Thing.T">T</a>]"""
-    expect(html).toBe(expected)
+  return it('should format type variables correctly in rich html', function() {
+    const html = formatTypeAsHtml(thing.type);
+    const expected = "<a data-qualified-name=\"LanguageFeatureImport.Thing\" title=\"LanguageFeatureImport.Thing\">Thing</a>[<a data-qualified-name=\"LanguageFeatureImport.Thing.T\" title=\"LanguageFeatureImport.Thing.T\">T</a>]";
+    return expect(html).toBe(expected);
+  });
+});
     
     
     
-describe 'formatCompletionsSignature', ->
-  it "should format x, y -> z", ->
-    inputParams = [[["x", "Int"], ["y", "Int"]]]
-    result = formatCompletionsSignature(inputParams)
+describe('formatCompletionsSignature', function() {
+  it("should format x, y -> z", function() {
+    const inputParams = [[["x", "Int"], ["y", "Int"]]];
+    const result = formatCompletionsSignature(inputParams);
 
-    expect(result).toBe("(${1:x: Int}, ${2:y: Int})")
+    return expect(result).toBe("(${1:x: Int}, ${2:y: Int})");
+  });
 
-  it "should format foo(asdf: Int, y: Int)", ->
-    inputString =
-        """
-        {"name":"foo","typeId":2801,"typeSig":{"sections":[[["asdf","Int"],["y","Int"]]],"result":"Int"},"relevance":90,"isCallable":true}
-        """
-    json = JSON.parse(inputString)
-    result = formatCompletionsSignature(json.typeSig.sections)
-    expect(result).toBe("(${1:asdf: Int}, ${2:y: Int})")
+  it("should format foo(asdf: Int, y: Int)", function() {
+    const inputString =
+        `\
+{"name":"foo","typeId":2801,"typeSig":{"sections":[[["asdf","Int"],["y","Int"]]],"result":"Int"},"relevance":90,"isCallable":true}\
+`;
+    const json = JSON.parse(inputString);
+    const result = formatCompletionsSignature(json.typeSig.sections);
+    return expect(result).toBe("(${1:asdf: Int}, ${2:y: Int})");
+  });
 
-  it "should format curried", ->
-    sections =
+  return it("should format curried", function() {
+    const sections =
        [
           [
             [
@@ -134,7 +147,9 @@ describe 'formatCompletionsSignature', ->
               "Int"
             ]
           ]
-        ]
+        ];
 
-    result = formatCompletionsSignature(sections)
-    expect(result).toBe("(${1:x: Int})(${2:y: Int})")
+    const result = formatCompletionsSignature(sections);
+    return expect(result).toBe("(${1:x: Int})(${2:y: Int})");
+  });
+});
